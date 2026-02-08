@@ -1,6 +1,5 @@
-package grafos;
+package org.uade.progra3.utils;
 
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -12,15 +11,20 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.uade.progra3.grafos.Conexion;
+import org.uade.progra3.grafos.Grafo;
+import org.uade.progra3.grafos.Usuario;
 
-public class DataLogger {
+public class DataLoader {
 
     private List<Usuario> usuarios;
     private List<Conexion> conexiones;
+    private Grafo grafo;
 
-    public DataLogger() {
+    public DataLoader(Grafo grafo) {
         this.usuarios = new ArrayList<>();
         this.conexiones = new ArrayList<>();
+        this.grafo = grafo;
     }
 
     /**
@@ -40,17 +44,6 @@ public class DataLogger {
         }
     }
 
-    /**
-     * Carga los datos desde un archivo JSON en una ruta del sistema de archivos.
-     */
-    public void cargarDesdeArchivo(String rutaArchivo) {
-        try (FileReader reader = new FileReader(rutaArchivo)) {
-            cargar(reader);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al leer el archivo: " + rutaArchivo, e);
-        }
-    }
-
     private void cargar(Reader reader) {
         JSONObject root = new JSONObject(new JSONTokener(reader));
 
@@ -64,6 +57,7 @@ public class DataLogger {
             String nombre = obj.getString("nombre");
             Usuario usuario = new Usuario(id, nombre);
             usuarios.add(usuario);
+            grafo.agregarUsuario(usuario);
             mapaUsuarios.put(id, usuario);
         }
 
@@ -80,14 +74,15 @@ public class DataLogger {
             Usuario destino = mapaUsuarios.get(destinoId);
 
             if (origen == null || destino == null) {
-                System.err.println("Conexión ignorada: origen=" + origenId + ", destino=" + destinoId + " (usuario no encontrado)");
+                System.err.println("Conexión ignorada: origen=" + origenId + ", destino=" + destinoId);
                 continue;
             }
 
             conexiones.add(new Conexion(origen, destino, peso));
+            grafo.agregarConexion(origen, destino, peso);
         }
 
-        System.out.println("Datos cargados: " + usuarios.size() + " usuarios, " + conexiones.size() + " conexiones.");
+        System.out.println("Datos cargados: " + usuarios.size() + " usuarios, " + conexiones.size() + " conexiones. \n");
     }
 
     public List<Usuario> getUsuarios() {

@@ -4,12 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.ejemplo</groupId>
-    <artifactId>grafos</artifactId>
+    <groupId>org.uade.progra3</groupId>
+    <artifactId>TP-Algoritmos-lll</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <packaging>jar</packaging>
-
-    <name>Grafos</name>
 
     <properties>
         <maven.compiler.source>23</maven.compiler.source>
@@ -24,4 +21,5 @@
             <version>20240303</version>
         </dependency>
     </dependencies>
+
 </project>

@@ -1,6 +1,11 @@
-package grafos;
+package org.uade.progra3.grafos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class Grafo {
     private Set<Usuario> usuarios;
@@ -20,7 +25,8 @@ public class Grafo {
 
     public void agregarConexion(Usuario origen, Usuario destino, int peso) {
         Conexion conexion = new Conexion(origen, destino, peso);
-
+        this.conexiones.add(conexion);
+        
         adyacencias.putIfAbsent(origen, new ArrayList<>());
         adyacencias.putIfAbsent(destino, new ArrayList<>());
 
@@ -56,5 +62,22 @@ public class Grafo {
             }
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Árbol de Recubrimiento Mínimo: \n\n");
+
+        int pesoTotal = 0;
+        for (Conexion c : this.conexiones) {
+            sb.append(c.getOrigen().getNombre())
+                    .append(" --(" ).append(c.getPeso()).append(")--> ")
+                    .append(c.getDestino().getNombre())
+                    .append("\n");
+            pesoTotal += c.getPeso();
+        }
+        sb.append("\nPeso total: ").append(pesoTotal);
+        return sb.toString();
     }
 }

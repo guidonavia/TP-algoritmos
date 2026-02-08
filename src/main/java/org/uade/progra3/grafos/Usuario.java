@@ -1,4 +1,4 @@
-package grafos;
+package org.uade.progra3.grafos;
 
 public class Usuario {
     private Long id;
@@ -24,5 +24,9 @@ public class Usuario {
     @Override
     public int hashCode() {
         return id.hashCode();
+    }
+
+    public String getNombre() {
+        return nombre;
     }
 }

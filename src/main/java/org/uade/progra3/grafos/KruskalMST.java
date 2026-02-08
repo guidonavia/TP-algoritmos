@@ -1,4 +1,4 @@
-package grafos;
+package org.uade.progra3.grafos;
 
 import java.util.*;
 
