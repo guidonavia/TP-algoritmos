@@ -1,13 +1,15 @@
 package grafos;
 
 public class Usuario {
-    private String id;
+    private Long id;
+    private String nombre;
 
-    public Usuario(String id) {
+    public Usuario(Long id, String nombre) {
         this.id = id;
+        this.nombre = nombre;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
@@ -22,10 +24,5 @@ public class Usuario {
     @Override
     public int hashCode() {
         return id.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return id;
     }
 }

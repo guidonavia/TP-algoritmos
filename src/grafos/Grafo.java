@@ -27,11 +27,34 @@ public class Grafo {
         adyacencias.get(origen).add(conexion);
     }
 
-    public Set<Usuario> getusuarios() {
+    public Set<Usuario> getUsuarios() {
         return usuarios;
     }
 
     public List<Conexion> getAdyacentes(Usuario v) {
         return adyacencias.getOrDefault(v, new ArrayList<>());
+    }
+
+    public boolean existeConexion(Usuario origen, Usuario destino) {
+        if (!adyacencias.containsKey(origen)) return false;
+
+        // Solo busco en la lista pequeña de vecinos de ESE origen
+        for (Conexion a : adyacencias.get(origen)) {
+            if (a.getDestino().equals(destino)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Integer getPesoConexion(Usuario origen, Usuario destino) {
+        if (!adyacencias.containsKey(origen)) return null;
+
+        for (Conexion a : adyacencias.get(origen)) {
+            if (a.getDestino().equals(destino)) {
+                return a.getPeso();
+            }
+        }
+        return null;
     }
 }
