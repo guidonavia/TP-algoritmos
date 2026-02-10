@@ -3,13 +3,13 @@ import java.util.Map;
 
 import org.uade.progra3.grafos.Djikstra;
 import org.uade.progra3.grafos.Grafo;
-import org.uade.progra3.grafos.Usuario;
+import org.uade.progra3.modelo.Usuario;
 import org.uade.progra3.utils.DataLoader;
 
 
 public class Main {
-    public static void main(String[] args) {
 
+    public static void main(String[] args) {
         // Ejercicio 3:
         Grafo grafo = new Grafo();
 

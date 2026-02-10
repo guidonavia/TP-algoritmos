@@ -1,4 +1,4 @@
-package org.uade.progra3.grafos;
+package org.uade.progra3.modelo;
 
 public class Usuario {
     private Long id;

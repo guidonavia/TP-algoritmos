@@ -1,5 +1,8 @@
 package org.uade.progra3.grafos;
 
+import org.uade.progra3.modelo.Conexion;
+import org.uade.progra3.modelo.Usuario;
+
 import java.util.*;
 
 public class KruskalMST {

@@ -11,9 +11,9 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.uade.progra3.grafos.Conexion;
+import org.uade.progra3.modelo.Conexion;
 import org.uade.progra3.grafos.Grafo;
-import org.uade.progra3.grafos.Usuario;
+import org.uade.progra3.modelo.Usuario;
 
 public class DataLoader {
 
