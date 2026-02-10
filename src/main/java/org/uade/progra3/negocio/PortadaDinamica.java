@@ -24,8 +24,7 @@ public class PortadaDinamica {
         }
         */
 
-        List<Publicacion> publicaciones = feed.obtenerPublicaciones();
-        feed.
+        List<Publicacion> publicaciones = feed.publicacionesPonderadas();
         int max = publicaciones.size() + 1;
         int[] dp = new int[publicaciones.size() + 1];
         int[] ultimaPublicacion = new int[publicaciones.size()  + 1];

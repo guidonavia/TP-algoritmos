@@ -1,6 +1,10 @@
 package org.uade.progra3.modelo;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Nodes.collect;
 
 public class Feed {
     private List<Publicacion> listadoPublicaciones;
@@ -19,5 +23,12 @@ public class Feed {
 
     public List<Publicacion> obtenerPublicaciones() {
         return this.listadoPublicaciones;
+    }
+
+    public List<Publicacion> publicacionesPonderadas() {
+        return this.listadoPublicaciones
+                .stream()
+                .sorted(Publicacion::compareTo)
+                .collect(Collectors.toList());
     }
 }
