@@ -1,10 +1,7 @@
 package org.uade.progra3.modelo;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.util.stream.Nodes.collect;
 
 public class Feed {
     private List<Publicacion> listadoPublicaciones;
