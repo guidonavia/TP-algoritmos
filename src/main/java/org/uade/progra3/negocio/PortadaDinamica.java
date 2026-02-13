@@ -1,111 +1,81 @@
 package org.uade.progra3.negocio;
 
-import org.uade.progra3.modelo.Feed;
+import org.uade.progra3.modelo.CandidatoPublicaciones;
+import org.uade.progra3.modelo.Portada;
 import org.uade.progra3.modelo.Publicacion;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class PortadaDinamica {
 
+    /**
+     * Calcula la selección óptima y la deja en el listado de publicaciones de la portada.
+     * Limpia la portada y agrega solo las publicaciones seleccionadas (orden original).
+     */
+    public void obtenerPublicaciones(CandidatoPublicaciones feed, Portada portada) {
+        List<Publicacion> publicaciones = feed.getListadoPublicaciones();
 
-    public void obtenerPublicaciones(Feed feed) {
-        if (feed.getListadoPublicaciones().isEmpty() || publicacionesTotal(feed) == 0) {
-            System.out.println("Sin publicaciones disponibles");
+        if (publicaciones == null || publicaciones.isEmpty()) {
+            portada.getPublicaciones().clear();
             return;
         }
-        /*
-        int montoMinimo = stock.keySet().stream().min(Integer::compareTo).get();
 
-        if (monto < montoMinimo) {
-            System.out.println("Monto mínimo a extraer: $" + montoMinimo);
-            return;
-        }
-        */
+        int cantidadPublicaciones = publicaciones.size();
+        int espacioMaximoPortada = Portada.getTamanioMaximo();
 
-        List<Publicacion> publicaciones = feed.publicacionesPonderadas();
-        int max = publicaciones.size() + 1;
-        int[] dp = new int[publicaciones.size() + 1];
-        int[] ultimaPublicacion = new int[publicaciones.size()  + 1];
+        // +1 filas: fila 0 = "0 publicaciones" (caso base, beneficio 0). Filas 1..n = "hasta la publicación i".
+        // +1 columnas: índices 0 hasta espacioMaximoPortada (ej. capacidad 100 → columnas 0,1,...,100 = 101).
+        int[][] beneficioMaximoHasta = new int[cantidadPublicaciones + 1][espacioMaximoPortada + 1];
 
-        for (int i = 1; i <= publicaciones.size(); i++) {
-            dp[i] = max;
-        }
-        dp[0] = 0;
+        // Llenar la tabla (programación dinámica). En cada celda decidimos "incluir o no" solo
+        // para ese subproblema (primeras indicePub publicaciones, capacidad espacio). Esa decisión
+        // no es la solución final: qué ítems van en la portada se obtiene recorriendo la tabla
+        // hacia atrás desde (n, capacidadMaxima), por eso hace falta volcarSolucionEnPortada.
+        for (int indicePub = 1; indicePub <= cantidadPublicaciones; indicePub++) {
+            Publicacion publicacion = publicaciones.get(indicePub - 1);
+            int beneficio = publicacion.ponderar();
+            int tamanio = publicacion.getTamanio();
 
-        // Programación Dinámica
-        for (Publicacion p : publicaciones) {
-            for (int i = b; i <= monto; i++) {
-                if (dp[i - b] + 1 < dp[i]) {
-                    dp[i] = dp[i - b] + 1;
-                    ultimoBillete[i] = b;
+            for (int espacio = 0; espacio <= espacioMaximoPortada; espacio++) {
+                int beneficioSinIncluir = beneficioMaximoHasta[indicePub - 1][espacio];
+                beneficioMaximoHasta[indicePub][espacio] = beneficioSinIncluir;
+
+                boolean cabeEnElEspacio = tamanio <= espacio;
+                if (cabeEnElEspacio) {
+                    int espacioRestante = espacio - tamanio;
+                    int beneficioIncluyendo = beneficioMaximoHasta[indicePub - 1][espacioRestante] + beneficio;
+                    if (beneficioIncluyendo > beneficioSinIncluir) {
+                        beneficioMaximoHasta[indicePub][espacio] = beneficioIncluyendo;
+                    }
                 }
             }
         }
 
-        if (dp[monto] == max) {
-            System.out.println("Cajero fuera de servicio o fondos insuficientes para este monto");
-            return;
-        }
-
-        Map<Integer, Integer> resultado = reconstruirSolucion(monto, ultimoBillete);
-
-        if (!hayStockSuficiente(resultado)) {
-            System.out.println("Cajero fuera de servicio o fondos insuficientes para este monto");
-            return;
-        }
-
-        mostrarResultadoUsuario(resultado);
-        actualizarStock(resultado);
-        verificarAlertas();
+        volcarSolucionEnPortada(publicaciones, 
+            beneficioMaximoHasta, 
+            cantidadPublicaciones, 
+            espacioMaximoPortada, 
+            portada
+        );
     }
 
-    // ---------------- Métodos auxiliares ----------------
-
-    private Map<Integer, Integer> reconstruirSolucion(int monto, int[] ultimoBillete) {
-        Map<Integer, Integer> resultado = new HashMap<>();
-        int restante = monto;
-
-        while (restante > 0) {
-            int b = ultimoBillete[restante];
-            resultado.put(b, resultado.getOrDefault(b, 0) + 1);
-            restante -= b;
-        }
-        return resultado;
-    }
-
-    private boolean hayStockSuficiente(Map<Integer, Integer> resultado) {
-        for (int b : resultado.keySet()) {
-            if (resultado.get(b) > stock.getOrDefault(b, 0)) {
-                return false;
+    /**
+     * Recorre la tabla hacia atrás y agrega al listado de la portada solo las publicaciones
+     * que forman la solución óptima (orden original).
+     */
+    private void volcarSolucionEnPortada(List<Publicacion> publicaciones,
+                                         int[][] beneficioMaximoHasta,
+                                         int cantidadPublicaciones,
+                                         int espacioMaximoPortada,
+                                         Portada portada) {
+        portada.getPublicaciones().clear();
+        int espacioRestante = espacioMaximoPortada;
+        for (int indicePub = cantidadPublicaciones; indicePub >= 1; indicePub--) {
+            if (beneficioMaximoHasta[indicePub][espacioRestante] != beneficioMaximoHasta[indicePub - 1][espacioRestante]) {
+                Publicacion publicacion = publicaciones.get(indicePub - 1);
+                portada.getPublicaciones().add(0, publicacion);
+                espacioRestante -= publicacion.getTamanio();
             }
         }
-        return true;
-    }
-
-    private void mostrarResultadoUsuario(Map<Integer, Integer> resultado) {
-        System.out.println("Operación exitosa. Se entregará:");
-        for (int b : resultado.keySet()) {
-            System.out.println("$" + b + " x " + resultado.get(b));
-        }
-    }
-
-    private void actualizarStock(Map<Integer, Integer> resultado) {
-        for (int b : resultado.keySet()) {
-            stock.put(b, stock.get(b) - resultado.get(b));
-        }
-    }
-
-    private void verificarAlertas() {
-        for (int b : stock.keySet()) {
-            if (stock.get(b) < UMBRAL_ALERTA) {
-                System.out.println("ALERTA MANTENIMIENTO: Bajo stock de billetes de $" + b);
-            }
-        }
-    }
-
-    private int publicacionesTotal(Feed feed) {
-        return feed.getListadoPublicaciones().size();
     }
 }
