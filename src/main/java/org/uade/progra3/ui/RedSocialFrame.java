@@ -19,9 +19,12 @@ import java.util.Map;
 public class RedSocialFrame extends JFrame {
 
     private final RedSocialServicio servicio;
+    private GrafoDiagramPanel diagramaGrafoOriginal;
+    private GrafoDiagramPanel diagramaMST;
     private JTextArea areaKruskal;
     private JComboBox<Usuario> comboUsuarios;
     private JTextArea areaDijkstra;
+    private GrafoDiagramPanel diagramaDijkstra;
     private JTextArea areaPortadaCandidatas;
     private JTextArea areaPortadaOptima;
 
@@ -29,7 +32,7 @@ public class RedSocialFrame extends JFrame {
         servicio = new RedSocialServicio();
         setTitle("Red Social Universitaria - Prototipo");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(700, 550);
+        setSize(1000, 700);
         setLocationRelativeTo(null);
 
         JTabbedPane tabs = new JTabbedPane();
@@ -46,8 +49,22 @@ public class RedSocialFrame extends JFrame {
             servicio.cargarDatos("demo-red-social.json");
             actualizarComboUsuarios();
             actualizarCandidatasPortada();
+            actualizarDiagramaGrafoOriginal();
+            actualizarDiagramaDijkstra();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al cargar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void actualizarDiagramaDijkstra() {
+        if (diagramaDijkstra != null) {
+            diagramaDijkstra.setGrafo(servicio.getGrafoCompleto(), servicio.getUsuarios());
+        }
+    }
+
+    private void actualizarDiagramaGrafoOriginal() {
+        if (diagramaGrafoOriginal != null) {
+            diagramaGrafoOriginal.setGrafo(servicio.getGrafoCompleto(), servicio.getUsuarios());
         }
     }
 
@@ -59,20 +76,35 @@ public class RedSocialFrame extends JFrame {
         btnCalcular.addActionListener(e -> ejecutarKruskal());
         p.add(btnCalcular, BorderLayout.NORTH);
 
-        areaKruskal = new JTextArea(20, 50);
+        // Grafo original: aristas curvas por el centro y flechas. MST: layout en árbol.
+        diagramaGrafoOriginal = new GrafoDiagramPanel("Grafo original (nodos y aristas)");
+        diagramaMST = new GrafoDiagramPanel("Red mínima - MST (Kruskal)");
+        diagramaMST.setModoArbol(true);
+        diagramaMST.setGrafo(null, List.of());
+
+        JPanel diagramas = new JPanel(new GridLayout(1, 2, 10, 0));
+        diagramas.add(diagramaGrafoOriginal);
+        diagramas.add(diagramaMST);
+        diagramaGrafoOriginal.setPreferredSize(new Dimension(420, 350));
+        diagramaMST.setPreferredSize(new Dimension(420, 350));
+        p.add(diagramas, BorderLayout.CENTER);
+
+        JPanel sur = new JPanel(new BorderLayout(0, 4));
+        areaKruskal = new JTextArea(8, 50);
         areaKruskal.setEditable(false);
         areaKruskal.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        p.add(new JScrollPane(areaKruskal), BorderLayout.CENTER);
-
-        JLabel info = new JLabel("Conjunto mínimo de conexiones para que todos los usuarios estén conectados (sin ciclos).");
-        info.setBorder(new EmptyBorder(0, 0, 5, 0));
-        p.add(info, BorderLayout.SOUTH);
+        sur.add(new JScrollPane(areaKruskal), BorderLayout.CENTER);
+        JLabel info = new JLabel("Lista de conexiones de la red mínima y peso total:");
+        sur.add(info, BorderLayout.SOUTH);
+        p.add(sur, BorderLayout.SOUTH);
         return p;
     }
 
     private void ejecutarKruskal() {
         try {
             servicio.calcularRedMinima();
+            // Actualizar diagrama del MST (mismos nodos, solo aristas del árbol)
+            diagramaMST.setGrafo(servicio.getRedMinima(), servicio.getUsuarios());
             StringBuilder sb = new StringBuilder();
             int total = 0;
             for (Conexion c : servicio.getRedMinima().getConexiones()) {
@@ -101,12 +133,20 @@ public class RedSocialFrame extends JFrame {
         top.add(btnDijkstra);
         p.add(top, BorderLayout.NORTH);
 
-        areaDijkstra = new JTextArea(18, 50);
+        // Diagrama del grafo con distancias + lista de texto
+        diagramaDijkstra = new GrafoDiagramPanel("Distancias mínimas (Dijkstra)");
+        diagramaDijkstra.setPreferredSize(new Dimension(420, 350));
+
+        areaDijkstra = new JTextArea(12, 30);
         areaDijkstra.setEditable(false);
         areaDijkstra.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        p.add(new JScrollPane(areaDijkstra), BorderLayout.CENTER);
 
-        JLabel info = new JLabel("Distancias mínimas (peso de conexiones). Recomendación: usuarios a menor distancia = amigos potenciales.");
+        JPanel content = new JPanel(new GridLayout(1, 2, 10, 0));
+        content.add(diagramaDijkstra);
+        content.add(new JScrollPane(areaDijkstra));
+        p.add(content, BorderLayout.CENTER);
+
+        JLabel info = new JLabel("Verde=origen, azul→naranja=cerca→lejos, rojo=inalcanzable (∞ = sin camino posible).");
         info.setBorder(new EmptyBorder(5, 0, 0, 0));
         p.add(info, BorderLayout.SOUTH);
         return p;
@@ -124,14 +164,20 @@ public class RedSocialFrame extends JFrame {
         if (origen == null) return;
         try {
             Map<Usuario, Integer> distancias = servicio.calcularDistanciasDesde(origen);
+
+            // Actualizar diagrama con distancias coloreadas
+            diagramaDijkstra.setDistancias(distancias, origen);
+
+            // Lista de texto
             StringBuilder sb = new StringBuilder();
             sb.append("Distancias desde: ").append(origen.getNombre()).append("\n\n");
             distancias.entrySet().stream()
                     .sorted(Comparator.comparingInt(Map.Entry::getValue))
                     .forEach(entry -> {
                         int d = entry.getValue();
-                        String distStr = d == Integer.MAX_VALUE ? "∞" : String.valueOf(d);
-                        sb.append("  ").append(entry.getKey().getNombre()).append("  →  ").append(distStr).append("\n");
+                        String distStr = d == Integer.MAX_VALUE ? "∞ (inalcanzable)" : String.valueOf(d);
+                        String tag = entry.getKey().equals(origen) ? " ← origen" : "";
+                        sb.append("  ").append(entry.getKey().getNombre()).append("  →  ").append(distStr).append(tag).append("\n");
                     });
             areaDijkstra.setText(sb.toString());
         } catch (Exception ex) {

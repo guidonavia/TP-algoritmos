@@ -45,6 +45,10 @@ public class RedSocialServicio {
         return dataLoader.getUsuarios();
     }
 
+    public Grafo getGrafoCompleto() {
+        return grafoCompleto;
+    }
+
     /** Ejecuta Kruskal y devuelve el grafo de la red mínima (MST). */
     public Grafo calcularRedMinima() {
         redMinima = KruskalMST.arbolDeRecubrimientoMinimo(grafoCompleto);
