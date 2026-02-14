@@ -20,7 +20,7 @@ import java.util.Map;
 public class RedSocialServicio {
 
     private final Grafo grafoCompleto;
-    private Grafo redMinima; // resultado de Kruskal
+    private Grafo redMinima;
     private final DataLoader dataLoader;
     private final PortadaDinamica portadaDinamica;
     private final Portada portada;
@@ -43,10 +43,6 @@ public class RedSocialServicio {
 
     public List<Usuario> getUsuarios() {
         return dataLoader.getUsuarios();
-    }
-
-    public Grafo getGrafoCompleto() {
-        return grafoCompleto;
     }
 
     /** Ejecuta Kruskal y devuelve el grafo de la red mínima (MST). */

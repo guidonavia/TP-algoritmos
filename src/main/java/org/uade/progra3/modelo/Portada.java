@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Portada {
     private static final int TAMANIO_MAXIMO = 100;
-    private List<Publicacion> publicaciones;
+    private final List<Publicacion> publicaciones;
 
     public static int getTamanioMaximo() {
         return TAMANIO_MAXIMO;

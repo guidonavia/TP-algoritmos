@@ -3,9 +3,9 @@ package org.uade.progra3.modelo;
 import java.util.List;
 
 public class Publicacion implements Comparable<Publicacion> {
-    private List<Like> likes;
-    private List<Comentario> comentarios;
-    private int tamanio;
+    private final List<Like> likes;
+    private final List<Comentario> comentarios;
+    private final int tamanio;
 
     public Publicacion(List<Like> likes, List<Comentario> comentarios, int tamanio) {
         this.likes = likes;

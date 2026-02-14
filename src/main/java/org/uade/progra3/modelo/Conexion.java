@@ -1,9 +1,9 @@
 package org.uade.progra3.modelo;
 
 public class Conexion implements Comparable<Conexion>{
-    private Usuario origen;
-    private Usuario destino;
-    private int peso;
+    private final Usuario origen;
+    private final Usuario destino;
+    private final int peso;
 
     public Conexion(Usuario origen, Usuario destino, int peso) {
         this.origen = origen;
@@ -30,6 +30,6 @@ public class Conexion implements Comparable<Conexion>{
 
     @Override
     public int compareTo(Conexion otra) {
-        return Integer.compare(this.peso, otra.peso);  // ← Ordena por peso
+        return Integer.compare(this.peso, otra.peso);
     }
 }

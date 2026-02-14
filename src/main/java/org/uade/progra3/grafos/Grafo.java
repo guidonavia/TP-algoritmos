@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class Grafo {
-    private Set<Usuario> usuarios;
-    private List<Conexion> conexiones;
-    private Map<Usuario, List<Conexion>> adyacencias;
+    private final Set<Usuario> usuarios;
+    private final List<Conexion> conexiones;
+    private final Map<Usuario, List<Conexion>> adyacencias;
 
     public Grafo() {
         usuarios = new HashSet<>();
