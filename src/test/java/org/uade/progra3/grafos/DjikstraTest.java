@@ -47,7 +47,7 @@ class DjikstraTest {
     class CaminosMinimos {
 
         @Test
-        @DisplayName("origin has distance 0")
+        @DisplayName("el origen tiene distancia 0")
         void origenDistanciaCero() {
             grafoLinealConAtajo();
             Map<Usuario, Integer> dist = Djikstra.calcularCaminosMinimos(grafo, a);
@@ -55,7 +55,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("direct neighbor has edge weight")
+        @DisplayName("el vecino directo tiene el peso de la arista")
         void vecinoDirectoPesoArista() {
             grafoLinealConAtajo();
             Map<Usuario, Integer> dist = Djikstra.calcularCaminosMinimos(grafo, a);
@@ -63,7 +63,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("shortest path: C=3 (A->B->C), D=4 (atajo A->D)")
+        @DisplayName("camino mínimo: C=3 (A->B->C), D=4 (atajo A->D)")
         void caminoMinimoCadena() {
             grafoLinealConAtajo();
             Map<Usuario, Integer> dist = Djikstra.calcularCaminosMinimos(grafo, a);
@@ -72,7 +72,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("from B: B=0, C=2, D=5, A unreachable (directed)")
+        @DisplayName("desde B: B=0, C=2, D=5, A inalcanzable (dirigido)")
         void desdeB() {
             grafoLinealConAtajo();
             Map<Usuario, Integer> dist = Djikstra.calcularCaminosMinimos(grafo, b);
@@ -83,7 +83,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("single node: distance to self is 0")
+        @DisplayName("un solo nodo: distancia a sí mismo es 0")
         void unSoloNodo() {
             grafo.agregarUsuario(a);
             Map<Usuario, Integer> dist = Djikstra.calcularCaminosMinimos(grafo, a);
@@ -92,7 +92,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("two nodes connected: correct distance")
+        @DisplayName("dos nodos conectados: distancia correcta")
         void dosNodosConectados() {
             grafo.agregarUsuario(a);
             grafo.agregarUsuario(b);
@@ -103,7 +103,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("unreachable node has MAX_VALUE")
+        @DisplayName("nodo inalcanzable tiene MAX_VALUE")
         void nodoInalcanzable() {
             grafo.agregarUsuario(a);
             grafo.agregarUsuario(b);
@@ -114,7 +114,7 @@ class DjikstraTest {
         }
 
         @Test
-        @DisplayName("returns one entry per graph vertex")
+        @DisplayName("devuelve una entrada por vértice del grafo")
         void unaEntradaPorVertice() {
             grafoLinealConAtajo();
             Map<Usuario, Integer> dist = Djikstra.calcularCaminosMinimos(grafo, a);

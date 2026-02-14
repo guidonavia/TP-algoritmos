@@ -54,7 +54,7 @@ class KruskalMSTTest {
     class ArbolRecubrimiento {
 
         @Test
-        @DisplayName("MST has n-1 edges for n vertices")
+        @DisplayName("el MST tiene n-1 aristas para n vértices")
         void mstTieneNMenos1Aristas() {
             grafo4NodosConMSTPeso6();
             Grafo mst = KruskalMST.arbolDeRecubrimientoMinimo(grafo);
@@ -64,7 +64,7 @@ class KruskalMSTTest {
         }
 
         @Test
-        @DisplayName("MST total weight is minimal (known 6)")
+        @DisplayName("el peso total del MST es mínimo (conocido: 6)")
         void mstPesoTotalMinimo() {
             grafo4NodosConMSTPeso6();
             Grafo mst = KruskalMST.arbolDeRecubrimientoMinimo(grafo);
@@ -73,7 +73,7 @@ class KruskalMSTTest {
         }
 
         @Test
-        @DisplayName("MST contains all original vertices")
+        @DisplayName("el MST contiene todos los vértices originales")
         void mstContieneTodosLosVertices() {
             grafo4NodosConMSTPeso6();
             Grafo mst = KruskalMST.arbolDeRecubrimientoMinimo(grafo);
@@ -86,7 +86,7 @@ class KruskalMSTTest {
         }
 
         @Test
-        @DisplayName("single node graph yields empty edge set")
+        @DisplayName("grafo de un solo nodo produce conjunto de aristas vacío")
         void grafoUnNodo_sinAristas() {
             grafo.agregarUsuario(a);
             Grafo mst = KruskalMST.arbolDeRecubrimientoMinimo(grafo);
@@ -95,7 +95,7 @@ class KruskalMSTTest {
         }
 
         @Test
-        @DisplayName("two connected nodes yield one edge")
+        @DisplayName("dos nodos conectados producen una arista")
         void grafoDosNodos_unaArista() {
             grafo.agregarUsuario(a);
             grafo.agregarUsuario(b);
@@ -108,7 +108,7 @@ class KruskalMSTTest {
         }
 
         @Test
-        @DisplayName("chooses lighter edge when multiple connect same components")
+        @DisplayName("elige la arista más liviana cuando varias conectan los mismos componentes")
         void eligeAristaMasLiviana() {
             grafo.agregarUsuario(a);
             grafo.agregarUsuario(b);

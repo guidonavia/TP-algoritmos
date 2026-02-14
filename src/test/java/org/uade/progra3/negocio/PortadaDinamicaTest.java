@@ -30,8 +30,8 @@ class PortadaDinamicaTest {
     }
 
     /**
-     * Helper: creates a publication with the given benefit (ponderar) and size.
-     * Benefit = comentarios.size()*10 + likes.size()*2.
+     * Helper: crea una publicación con el beneficio (ponderar) y tamaño dados.
+     * Beneficio = comentarios.size()*10 + likes.size()*2.
      */
     private static Publicacion publicacion(int beneficio, int tamanio) {
         int c = beneficio / 10;
@@ -44,14 +44,14 @@ class PortadaDinamicaTest {
     }
 
     @Nested
-    @DisplayName("obtenerPublicaciones - early return")
+    @DisplayName("obtenerPublicaciones - retorno temprano")
     class EarlyReturn {
 
         @Test
-        @DisplayName("when feed has null listado then portada is cleared")
+        @DisplayName("cuando el feed tiene listado null, la portada se limpia")
         void feedListadoNull_clearsPortada() {
             CandidatoPublicaciones feed = new CandidatoPublicaciones(null);
-            portada.getPublicaciones().add(publicacion(10, 5)); // pre-fill
+            portada.getPublicaciones().add(publicacion(10, 5)); // precarga
 
             portadaDinamica.obtenerPublicaciones(feed, portada);
 
@@ -59,7 +59,7 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("when feed has empty list then portada is cleared")
+        @DisplayName("cuando el feed tiene lista vacía, la portada se limpia")
         void feedListadoEmpty_clearsPortada() {
             CandidatoPublicaciones feed = new CandidatoPublicaciones(Collections.emptyList());
             portada.getPublicaciones().add(publicacion(10, 5));
@@ -71,11 +71,11 @@ class PortadaDinamicaTest {
     }
 
     @Nested
-    @DisplayName("obtenerPublicaciones - DP and volcarSolucionEnPortada")
+    @DisplayName("obtenerPublicaciones - PD y volcarSolucionEnPortada")
     class DpAndReconstruction {
 
         @Test
-        @DisplayName("single publication that fits is selected")
+        @DisplayName("una sola publicación que cabe es seleccionada")
         void singlePublicationThatFits_selected() {
             Publicacion pub = publicacion(20, 30);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(pub));
@@ -87,7 +87,7 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("single publication that does not fit (size > capacity) leaves portada empty")
+        @DisplayName("una sola publicación que no cabe (tamaño > capacidad) deja la portada vacía")
         void singlePublicationTooLarge_portadaEmpty() {
             Publicacion pub = publicacion(100, Portada.getTamanioMaximo() + 1);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(pub));
@@ -98,7 +98,7 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("two publications both fit and both selected when capacity allows")
+        @DisplayName("dos publicaciones que caben, ambas seleccionadas si la capacidad lo permite")
         void twoPublicationsBothFit_bothSelected() {
             Publicacion a = publicacion(10, 40);
             Publicacion b = publicacion(10, 40);
@@ -112,7 +112,7 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("two publications only one fits by size then one selected")
+        @DisplayName("dos publicaciones, solo una cabe por tamaño, se selecciona una")
         void twoPublicationsOnlyOneFits_oneSelected() {
             Publicacion fits = publicacion(50, 50);
             Publicacion tooBig = publicacion(100, 60);
@@ -125,45 +125,40 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("knapsack choice: higher benefit subset selected over lower")
+        @DisplayName("mochila: se selecciona el subconjunto de mayor beneficio")
         void knapsackOptimalSubsetSelected() {
-            // Capacity 100. A=benefit 60 size 50, B=benefit 50 size 50 -> both fit, total 110. A+B=100 size.
-            // Or A=60/50, C=40/50 -> 100 benefit, 100 size. So A+C is better than A+B if we had something else.
-            // Simpler: A=60 size 50, B=50 size 50 -> both fit, benefit 110.
-            // Now: A=60 size 60, B=50 size 50, C=50 size 50. Only one of (B,C) fits with A (60+50=110>100). So A+B or A+C = 110, or B+C = 100. So we want A + one of B,C -> selected 2 items. Covers "include" in volcar.
-            Publicacion a = publicacion(60, 60);
+            Publicacion a = publicacion(60, 50);
             Publicacion b = publicacion(50, 50);
             Publicacion c = publicacion(50, 50);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(a, b, c));
 
             portadaDinamica.obtenerPublicaciones(feed, portada);
 
-            // Optimal: A + B or A + C (benefit 110), not B+C (100). So 2 items.
             assertEquals(2, portada.getPublicaciones().size());
             int totalBenefit = portada.getPublicaciones().stream().mapToInt(Publicacion::ponderar).sum();
             assertEquals(110, totalBenefit);
         }
 
         @Test
-        @DisplayName("cabeEnElEspacio false path: publication larger than current space")
+        @DisplayName("camino cabeEnElEspacio falso: publicación más grande que el espacio actual")
         void publicationLargerThanSpace_notIncluded() {
-            // One pub size 50 benefit 10, one pub size 60 benefit 100. For space 50 we can't take the second.
+            // Una pub tamaño 50 beneficio 10, otra pub tamaño 60 beneficio 100. Con espacio 50 no podemos tomar la segunda.
             Publicacion small = publicacion(10, 50);
             Publicacion big = publicacion(100, 60);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(small, big));
 
             portadaDinamica.obtenerPublicaciones(feed, portada);
 
-            // Only "small" fits in 100? No: 50+60=110>100. So we take either small (10) or big (100). Optimal = big.
+            // ¿Solo "small" cabe en 100? No: 50+60=110>100. Tomamos small (10) o big (100). Óptimo = big.
             assertEquals(1, portada.getPublicaciones().size());
             assertEquals(big, portada.getPublicaciones().get(0));
         }
 
         @Test
-        @DisplayName("beneficioIncluyendo <= beneficioSinIncluir: don't update cell")
+        @DisplayName("beneficioIncluyendo <= beneficioSinIncluir: no se actualiza la celda")
         void includeNotBetter_keepsPreviousValue() {
-            // Low benefit item that fits: including it gives less than not including (e.g. we already have better).
-            // First pub 100 benefit 50 size, second 4 benefit 50 size. With capacity 100: take first only (100). Exercises "include" losing to "don't include".
+            // Ítem de bajo beneficio que cabe: incluirlo da menos que no incluirlo (ya tenemos algo mejor).
+            // Primera pub beneficio 100 tamaño 50, segunda beneficio 4 tamaño 50. Con capacidad 100: tomar solo la primera (100). Ejercita "incluir" perdiendo contra "no incluir".
             Publicacion high = publicacion(100, 50);
             Publicacion low = publicacion(4, 50);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(high, low));
@@ -175,13 +170,13 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("backtracking skips non-selected items")
+        @DisplayName("el backtracking omite ítems no seleccionados")
         void backtrackingSkipsNonSelected() {
-            // Multiple items where some are not in optimal solution (covers volcarSolucionEnPortada branch when equal).
+            // Múltiples ítems donde algunos no están en la solución óptima (cubre la rama de volcarSolucionEnPortada cuando son iguales).
             Publicacion a = publicacion(30, 40);
             Publicacion b = publicacion(30, 40);
             Publicacion c = publicacion(30, 40);
-            // Capacity 100. A+B+C = 120 > 100. So best is any two: 60 benefit. One item is left out.
+            // Capacidad 100. A+B+C = 120 > 100. Lo mejor es cualquier par: beneficio 60. Un ítem queda afuera.
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(a, b, c));
 
             portadaDinamica.obtenerPublicaciones(feed, portada);
@@ -191,7 +186,7 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("portada is cleared before filling with solution")
+        @DisplayName("la portada se limpia antes de llenarla con la solución")
         void portadaClearedBeforeFill() {
             portada.getPublicaciones().add(publicacion(1, 1));
             Publicacion pub = publicacion(20, 20);
@@ -204,7 +199,7 @@ class PortadaDinamicaTest {
         }
 
         @Test
-        @DisplayName("order of selected publications is preserved (first to last)")
+        @DisplayName("el orden de las publicaciones seleccionadas se preserva (primera a última)")
         void orderPreserved() {
             Publicacion first = publicacion(20, 30);
             Publicacion second = publicacion(20, 30);

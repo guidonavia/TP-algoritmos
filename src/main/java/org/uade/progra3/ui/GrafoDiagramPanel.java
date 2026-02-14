@@ -127,7 +127,7 @@ public class GrafoDiagramPanel extends JPanel {
             Point p = posiciones.get(u);
             if (p == null) continue;
 
-            Color fillColor = new Color(70, 130, 180); // default azul
+            Color fillColor = new Color(70, 130, 180); // azul por defecto
             Color borderColor = new Color(30, 64, 120);
             if (distancias != null) {
                 if (u.equals(nodoOrigen)) {
@@ -236,7 +236,7 @@ public class GrafoDiagramPanel extends JPanel {
     }
 
     /**
-     * Force-directed layout: simula fuerzas de repulsión entre todos los nodos
+     * Layout dirigido por fuerzas: simula fuerzas de repulsión entre todos los nodos
      * y atracción entre nodos conectados para distribuirlos con distancia clara.
      */
     private void calcularPosicionesFuerzas(int w, int h) {
