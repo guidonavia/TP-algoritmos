@@ -12,18 +12,23 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.uade.progra3.modelo.Conexion;
+import org.uade.progra3.modelo.Publicacion;
 import org.uade.progra3.grafos.Grafo;
 import org.uade.progra3.modelo.Usuario;
+import org.uade.progra3.modelo.Like;
+import org.uade.progra3.modelo.Comentario;
 
 public class DataLoader {
 
     private List<Usuario> usuarios;
     private List<Conexion> conexiones;
+    private List<Publicacion> publicaciones;
     private Grafo grafo;
 
     public DataLoader(Grafo grafo) {
         this.usuarios = new ArrayList<>();
         this.conexiones = new ArrayList<>();
+        this.publicaciones = new ArrayList<>();
         this.grafo = grafo;
     }
 
@@ -82,7 +87,28 @@ public class DataLoader {
             grafo.agregarConexion(origen, destino, peso);
         }
 
-        System.out.println("Datos cargados: " + usuarios.size() + " usuarios, " + conexiones.size() + " conexiones. \n");
+        // Parsear publicaciones (opcional: beneficio = comentarios*10 + likes*2, tamanio)
+        if (root.has("publicaciones")) {
+            JSONArray jsonPublicaciones = root.getJSONArray("publicaciones");
+            for (int i = 0; i < jsonPublicaciones.length(); i++) {
+                JSONObject obj = jsonPublicaciones.getJSONObject(i);
+                int likes = obj.optInt("likes", 0);
+                int comentarios = obj.optInt("comentarios", 0);
+                int tamanio = obj.getInt("tamanio");
+                publicaciones.add(crearPublicacion(likes, comentarios, tamanio));
+            }
+        }
+
+        System.out.println("Datos cargados: " + usuarios.size() + " usuarios, " + conexiones.size() + " conexiones"
+                + (publicaciones.isEmpty() ? "" : ", " + publicaciones.size() + " publicaciones") + ". \n");
+    }
+
+    private static Publicacion crearPublicacion(int cantidadLikes, int cantidadComentarios, int tamanio) {
+        List<Like> likes = new ArrayList<>();
+        for (int i = 0; i < cantidadLikes; i++) likes.add(new Like());
+        List<Comentario> comentarios = new ArrayList<>();
+        for (int i = 0; i < cantidadComentarios; i++) comentarios.add(new Comentario());
+        return new Publicacion(likes, comentarios, tamanio);
     }
 
     public List<Usuario> getUsuarios() {
@@ -91,5 +117,9 @@ public class DataLoader {
 
     public List<Conexion> getConexiones() {
         return conexiones;
+    }
+
+    public List<Publicacion> getPublicaciones() {
+        return publicaciones;
     }
 }

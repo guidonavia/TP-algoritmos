@@ -40,6 +40,10 @@ public class Grafo {
         return usuarios;
     }
 
+    public List<Conexion> getConexiones() {
+        return conexiones;
+    }
+
     public List<Conexion> getAdyacentes(Usuario v) {
         return adyacencias.getOrDefault(v, new ArrayList<>());
     }

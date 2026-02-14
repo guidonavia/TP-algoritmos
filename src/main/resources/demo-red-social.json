@@ -1,0 +1,37 @@
+{
+  "usuarios": [
+    { "id": 1, "nombre": "Paula-Castillo" },
+    { "id": 2, "nombre": "Silvia-Mendoza" },
+    { "id": 3, "nombre": "Oscar-Garcia" },
+    { "id": 4, "nombre": "Eduardo-Rios" },
+    { "id": 5, "nombre": "Luis-Reyes" },
+    { "id": 6, "nombre": "Carlos-Vega" },
+    { "id": 7, "nombre": "Camila-Gomez" },
+    { "id": 8, "nombre": "Laura-Ruiz" }
+  ],
+  "conexiones": [
+    { "origen": 1, "destino": 2, "peso": 3 },
+    { "origen": 1, "destino": 3, "peso": 5 },
+    { "origen": 2, "destino": 4, "peso": 2 },
+    { "origen": 3, "destino": 4, "peso": 1 },
+    { "origen": 3, "destino": 5, "peso": 4 },
+    { "origen": 4, "destino": 6, "peso": 2 },
+    { "origen": 5, "destino": 6, "peso": 3 },
+    { "origen": 5, "destino": 7, "peso": 1 },
+    { "origen": 6, "destino": 8, "peso": 2 },
+    { "origen": 7, "destino": 8, "peso": 4 },
+    { "origen": 2, "destino": 5, "peso": 6 }
+  ],
+  "publicaciones": [
+    { "likes": 5, "comentarios": 2, "tamanio": 25 },
+    { "likes": 3, "comentarios": 4, "tamanio": 40 },
+    { "likes": 10, "comentarios": 1, "tamanio": 30 },
+    { "likes": 2, "comentarios": 3, "tamanio": 20 },
+    { "likes": 8, "comentarios": 5, "tamanio": 50 },
+    { "likes": 1, "comentarios": 0, "tamanio": 15 },
+    { "likes": 4, "comentarios": 2, "tamanio": 35 },
+    { "likes": 6, "comentarios": 3, "tamanio": 45 },
+    { "likes": 0, "comentarios": 1, "tamanio": 10 },
+    { "likes": 7, "comentarios": 4, "tamanio": 55 }
+  ]
+}

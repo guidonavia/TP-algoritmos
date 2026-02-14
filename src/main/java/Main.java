@@ -1,32 +1,21 @@
+import org.uade.progra3.ui.RedSocialFrame;
 
-import java.util.Map;
+import javax.swing.*;
 
-import org.uade.progra3.grafos.Djikstra;
-import org.uade.progra3.grafos.Grafo;
-import org.uade.progra3.modelo.Usuario;
-import org.uade.progra3.utils.DataLoader;
-
-
+/**
+ * Punto de entrada: lanza la UI del prototipo de red social universitaria.
+ * Usa demo-red-social.json (usuarios, conexiones, publicaciones) para las tres pestañas:
+ * Kruskal (red mínima), Dijkstra (recomendación), Programación dinámica (portada óptima).
+ */
 public class Main {
 
     public static void main(String[] args) {
-        // Ejercicio 3:
-        Grafo grafo = new Grafo();
-
-        DataLoader dataLoader = new DataLoader(grafo);
-
-        dataLoader.cargarDesdeRecurso("conexiones.JSON");
-
-        // System.out.println(KruskalMST.arbolDeRecubrimientoMinimo(grafo));
-
-        // Ejercicio 4:
-        Usuario origen = grafo.getUsuarios().iterator().next();
-        Map<Usuario, Integer> map = Djikstra.calcularCaminosMinimos(grafo, origen);
-        
-        for (Map.Entry<Usuario, Integer> entry : map.entrySet()) {
-            Usuario usuario = entry.getKey();
-            Integer distancia = entry.getValue();
-            System.out.println(usuario.getNombre() + " -> " + distancia);
-        }
+        SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) { }
+            RedSocialFrame frame = new RedSocialFrame();
+            frame.setVisible(true);
+        });
     }
 }
