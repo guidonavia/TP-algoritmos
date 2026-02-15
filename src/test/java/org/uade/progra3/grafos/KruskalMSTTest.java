@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("KruskalMST")
@@ -105,6 +106,29 @@ class KruskalMSTTest {
             assertEquals(2, mst.getUsuarios().size());
             assertEquals(1, mst.getConexiones().size());
             assertEquals(10, mst.getConexiones().get(0).getPeso());
+        }
+
+        @Test
+        @DisplayName("rechaza arista cuando origen y destino ya están en la misma componente (evita ciclo)")
+        void rechazaAristaQueCreariaCiclo() {
+            grafo.agregarUsuario(a);
+            grafo.agregarUsuario(b);
+            grafo.agregarUsuario(c);
+            grafo.agregarConexion(a, b, 1);
+            grafo.agregarConexion(b, a, 1);
+            grafo.agregarConexion(b, c, 2);
+            grafo.agregarConexion(c, b, 2);
+            grafo.agregarConexion(a, c, 3);
+            grafo.agregarConexion(c, a, 3);
+
+            Grafo mst = KruskalMST.arbolDeRecubrimientoMinimo(grafo);
+
+            assertEquals(2, mst.getConexiones().size(), "Solo 2 aristas: A-B y B-C");
+            assertEquals(3, mst.getConexiones().stream().mapToInt(Conexion::getPeso).sum());
+            boolean hayAconexionAC = mst.getConexiones().stream()
+                    .anyMatch(con -> (con.getOrigen().equals(a) && con.getDestino().equals(c))
+                            || (con.getOrigen().equals(c) && con.getDestino().equals(a)));
+            assertFalse(hayAconexionAC, "A-C crearía ciclo, no debe estar en el MST");
         }
 
         @Test
