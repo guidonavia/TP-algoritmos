@@ -115,7 +115,7 @@ class PortadaDinamicaTest {
         @DisplayName("dos publicaciones, solo una cabe por tamaño, se selecciona una")
         void twoPublicationsOnlyOneFits_oneSelected() {
             Publicacion fits = publicacion(50, 50);
-            Publicacion tooBig = publicacion(100, 60);
+            Publicacion tooBig = publicacion(100, Portada.getTamanioMaximo() + 1);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(fits, tooBig));
 
             portadaDinamica.obtenerPublicaciones(feed, portada);
@@ -158,9 +158,10 @@ class PortadaDinamicaTest {
         @DisplayName("beneficioIncluyendo <= beneficioSinIncluir: no se actualiza la celda")
         void includeNotBetter_keepsPreviousValue() {
             // Ítem de bajo beneficio que cabe: incluirlo da menos que no incluirlo (ya tenemos algo mejor).
-            // Primera pub beneficio 100 tamaño 50, segunda beneficio 4 tamaño 50. Con capacidad 100: tomar solo la primera (100). Ejercita "incluir" perdiendo contra "no incluir".
+            // Primera pub beneficio 100 tamaño 50, segunda beneficio 4 tamaño 51. Con capacidad 100: no caben ambas (50+51>100).
+            // Tomar solo la primera da 100. Incluir la segunda requeriría dejar la primera: da 4. 4 <= 100, no se actualiza.
             Publicacion high = publicacion(100, 50);
-            Publicacion low = publicacion(4, 50);
+            Publicacion low = publicacion(4, 51);
             CandidatoPublicaciones feed = new CandidatoPublicaciones(List.of(high, low));
 
             portadaDinamica.obtenerPublicaciones(feed, portada);
