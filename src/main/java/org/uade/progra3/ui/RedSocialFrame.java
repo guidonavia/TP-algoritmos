@@ -1,8 +1,11 @@
 package org.uade.progra3.ui;
 
+import org.uade.progra3.grafos.Djikstra;
+import org.uade.progra3.grafos.KruskalMST;
 import org.uade.progra3.modelo.Conexion;
 import org.uade.progra3.modelo.Publicacion;
 import org.uade.progra3.modelo.Usuario;
+import org.uade.progra3.negocio.PortadaDinamica;
 import org.uade.progra3.servicio.RedSocialServicio;
 
 import javax.swing.*;
@@ -113,6 +116,7 @@ public class RedSocialFrame extends JFrame {
                 total += c.getPeso();
             }
             sb.append("\nPeso total de la red mínima: ").append(total);
+            sb.append("\n\nComplejidad temporal: ").append(KruskalMST.COMPLEJIDAD_TEMPORAL).append(" (E = aristas, V = vértices)");
             areaKruskal.setText(sb.toString());
         } catch (Exception ex) {
             areaKruskal.setText("Error: " + ex.getMessage());
@@ -179,6 +183,7 @@ public class RedSocialFrame extends JFrame {
                         String tag = entry.getKey().equals(origen) ? " ← origen" : "";
                         sb.append("  ").append(entry.getKey().getNombre()).append("  →  ").append(distStr).append(tag).append("\n");
                     });
+            sb.append("\nComplejidad temporal: ").append(Djikstra.COMPLEJIDAD_TEMPORAL).append(" (V = vértices, E = aristas)");
             areaDijkstra.setText(sb.toString());
         } catch (Exception ex) {
             areaDijkstra.setText("Error: " + ex.getMessage());
@@ -236,6 +241,7 @@ public class RedSocialFrame extends JFrame {
                 sb.append(i + 1).append(". beneficio=").append(pub.ponderar()).append(", tamaño=").append(pub.getTamanio()).append("\n");
             }
             sb.append("\nBeneficio total: ").append(beneficioTotal).append(", tamaño usado: ").append(tamanioTotal).append("/").append(servicio.getCapacidadPortada());
+            sb.append("\n\nComplejidad temporal: ").append(PortadaDinamica.COMPLEJIDAD_TEMPORAL).append(" (n = publicaciones, W = capacidad)");
             areaPortadaOptima.setText(sb.toString());
         } catch (Exception ex) {
             areaPortadaOptima.setText("Error: " + ex.getMessage());

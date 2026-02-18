@@ -8,6 +8,9 @@ import java.util.List;
 
 public class PortadaDinamica {
 
+    /** Complejidad temporal: n = cantidad de publicaciones, W = capacidad máxima de la portada. */
+    public static final String COMPLEJIDAD_TEMPORAL = "O(n × W)";
+
     /**
      * Calcula la selección óptima y la deja en el listado de publicaciones de la portada.
      * Limpia la portada y agrega solo las publicaciones seleccionadas (orden original).

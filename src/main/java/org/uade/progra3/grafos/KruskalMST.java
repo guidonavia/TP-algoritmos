@@ -7,6 +7,8 @@ import java.util.*;
 
 public class KruskalMST {
 
+    /** Complejidad temporal: E = aristas, V = vértices. */
+    public static final String COMPLEJIDAD_TEMPORAL = "O(E log E)";
 
     public static Grafo arbolDeRecubrimientoMinimo(Grafo grafo) {
         Grafo resultado = new Grafo();

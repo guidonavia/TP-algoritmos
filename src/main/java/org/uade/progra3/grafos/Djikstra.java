@@ -10,6 +10,9 @@ import java.util.Set;
 
 public class Djikstra {
 
+    /** Complejidad temporal: V = vértices, E = aristas. */
+    public static final String COMPLEJIDAD_TEMPORAL = "O(V² + E)";
+
     public static Map<Usuario, Integer> calcularCaminosMinimos(Grafo grafo, Usuario origen) {
 
         // distancia minima desde el usuario a cada posible amistad
