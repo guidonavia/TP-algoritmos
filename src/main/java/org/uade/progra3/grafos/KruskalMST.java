@@ -25,9 +25,9 @@ public class KruskalMST {
 
         // Obtenemos todos los pesos y los ponemos en la cola de prioridad.
         PriorityQueue<Conexion> pq = new PriorityQueue<>();
-        for(Usuario v1 : grafo.getUsuarios()) {
-            for(Usuario v2 : grafo.getUsuarios()) {
-                if(grafo.existeConexion(v1, v2) && !resultado.existeConexion(v1, v2)) {
+        for (Usuario v1 : grafo.getUsuarios()) {
+            for (Usuario v2 : grafo.getUsuarios()) {
+                if (grafo.existeConexion(v1, v2) && !pq.contains(new Conexion(v1, v2, grafo.getPesoConexion(v1, v2)))) {
                     int peso = grafo.getPesoConexion(v1, v2);
                     pq.add(new Conexion(v1, v2, peso));
                 }
