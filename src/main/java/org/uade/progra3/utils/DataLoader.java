@@ -11,7 +11,9 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.uade.progra3.modelo.Administrador;
 import org.uade.progra3.modelo.Conexion;
+import org.uade.progra3.modelo.Grupo;
 import org.uade.progra3.modelo.Publicacion;
 import org.uade.progra3.grafos.Grafo;
 import org.uade.progra3.modelo.Usuario;
@@ -23,12 +25,17 @@ public class DataLoader {
     private List<Usuario> usuarios;
     private List<Conexion> conexiones;
     private List<Publicacion> publicaciones;
+    private List<Grupo> grupos;
+    private List<Administrador> administradores;
+    private int[][] costoAsignacion;
     private Grafo grafo;
 
     public DataLoader(Grafo grafo) {
         this.usuarios = new ArrayList<>();
         this.conexiones = new ArrayList<>();
         this.publicaciones = new ArrayList<>();
+        this.grupos = new ArrayList<>();
+        this.administradores = new ArrayList<>();
         this.grafo = grafo;
     }
 
@@ -99,8 +106,42 @@ public class DataLoader {
             }
         }
 
+        // Parsear grupos (opcional)
+        if (root.has("grupos")) {
+            JSONArray jsonGrupos = root.getJSONArray("grupos");
+            for (int i = 0; i < jsonGrupos.length(); i++) {
+                JSONObject obj = jsonGrupos.getJSONObject(i);
+                grupos.add(new Grupo(obj.getLong("id"), obj.getString("nombre")));
+            }
+        }
+
+        // Parsear administradores (opcional)
+        if (root.has("administradores")) {
+            JSONArray jsonAdmins = root.getJSONArray("administradores");
+            for (int i = 0; i < jsonAdmins.length(); i++) {
+                JSONObject obj = jsonAdmins.getJSONObject(i);
+                administradores.add(new Administrador(obj.getLong("id"), obj.getString("nombre")));
+            }
+        }
+
+        // Parsear matriz de costos de asignación (opcional)
+        if (root.has("costoAsignacion")) {
+            JSONArray jsonCostos = root.getJSONArray("costoAsignacion");
+            costoAsignacion = new int[jsonCostos.length()][];
+            for (int i = 0; i < jsonCostos.length(); i++) {
+                JSONArray fila = jsonCostos.getJSONArray(i);
+                costoAsignacion[i] = new int[fila.length()];
+                for (int j = 0; j < fila.length(); j++) {
+                    costoAsignacion[i][j] = fila.getInt(j);
+                }
+            }
+        }
+
         System.out.println("Datos cargados: " + usuarios.size() + " usuarios, " + conexiones.size() + " conexiones"
-                + (publicaciones.isEmpty() ? "" : ", " + publicaciones.size() + " publicaciones") + ". \n");
+                + (publicaciones.isEmpty() ? "" : ", " + publicaciones.size() + " publicaciones")
+                + (grupos.isEmpty() ? "" : ", " + grupos.size() + " grupos")
+                + (administradores.isEmpty() ? "" : ", " + administradores.size() + " administradores")
+                + ". \n");
     }
 
     private static Publicacion crearPublicacion(int cantidadLikes, int cantidadComentarios, int tamanio) {
@@ -121,5 +162,17 @@ public class DataLoader {
 
     public List<Publicacion> getPublicaciones() {
         return publicaciones;
+    }
+
+    public List<Grupo> getGrupos() {
+        return grupos;
+    }
+
+    public List<Administrador> getAdministradores() {
+        return administradores;
+    }
+
+    public int[][] getCostoAsignacion() {
+        return costoAsignacion;
     }
 }

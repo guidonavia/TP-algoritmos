@@ -1,8 +1,12 @@
 package org.uade.progra3.ui;
 
+import org.uade.progra3.grafos.ConectividadBFS;
+import org.uade.progra3.modelo.Administrador;
 import org.uade.progra3.modelo.Conexion;
+import org.uade.progra3.modelo.Grupo;
 import org.uade.progra3.modelo.Publicacion;
 import org.uade.progra3.modelo.Usuario;
+import org.uade.progra3.negocio.AsignacionAdminDP;
 import org.uade.progra3.servicio.RedSocialServicio;
 
 import javax.swing.*;
@@ -14,7 +18,8 @@ import java.util.Map;
 
 /**
  * Ventana principal del prototipo: red social universitaria.
- * Tres pestañas: Red mínima (Kruskal), Recomendación de amigos (Dijkstra), Portada óptima (DP).
+ * Cinco pestañas: Red mínima (Kruskal), Recomendación (Dijkstra), Portada óptima (DP),
+ * Simulación de bloqueo (BFS), Asignación de admins (DP bitmask).
  */
 public class RedSocialFrame extends JFrame {
 
@@ -27,6 +32,13 @@ public class RedSocialFrame extends JFrame {
     private GrafoDiagramPanel diagramaDijkstra;
     private JTextArea areaPortadaCandidatas;
     private JTextArea areaPortadaOptima;
+    // Pestaña 4: Simulación de bloqueo
+    private JComboBox<Usuario> comboBloqueador;
+    private JComboBox<Usuario> comboBloqueado;
+    private JTextArea areaBloqueo;
+    // Pestaña 5: Asignación de administradores
+    private JTextArea areaMatrizCostos;
+    private JTextArea areaAsignacion;
 
     public RedSocialFrame() {
         servicio = new RedSocialServicio();
@@ -39,6 +51,8 @@ public class RedSocialFrame extends JFrame {
         tabs.addTab("1. Red mínima (Kruskal)", panelRedMinima());
         tabs.addTab("2. Recomendación (Dijkstra)", panelRecomendacion());
         tabs.addTab("3. Portada óptima (DP)", panelPortada());
+        tabs.addTab("4. Bloqueo (BFS)", panelBloqueo());
+        tabs.addTab("5. Asignación admins (DP)", panelAsignacion());
         add(tabs);
 
         cargarDatosInicial();
@@ -51,6 +65,8 @@ public class RedSocialFrame extends JFrame {
             actualizarCandidatasPortada();
             actualizarDiagramaGrafoOriginal();
             actualizarDiagramaDijkstra();
+            actualizarCombosBloqueo();
+            actualizarMatrizCostos();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error al cargar datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -239,6 +255,196 @@ public class RedSocialFrame extends JFrame {
             areaPortadaOptima.setText(sb.toString());
         } catch (Exception ex) {
             areaPortadaOptima.setText("Error: " + ex.getMessage());
+        }
+    }
+
+    // --- Pestaña 4: Simulación de Bloqueo (BFS) ---
+
+    private JPanel panelBloqueo() {
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        p.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        top.add(new JLabel("Bloqueador:"));
+        comboBloqueador = new JComboBox<>();
+        comboBloqueador.setPreferredSize(new Dimension(160, 28));
+        top.add(comboBloqueador);
+        top.add(new JLabel("Bloqueado:"));
+        comboBloqueado = new JComboBox<>();
+        comboBloqueado.setPreferredSize(new Dimension(160, 28));
+        top.add(comboBloqueado);
+        JButton btnBloqueo = new JButton("Simular bloqueo (BFS)");
+        btnBloqueo.addActionListener(e -> ejecutarBloqueo());
+        top.add(btnBloqueo);
+        p.add(top, BorderLayout.NORTH);
+
+        areaBloqueo = new JTextArea(20, 60);
+        areaBloqueo.setEditable(false);
+        areaBloqueo.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        p.add(new JScrollPane(areaBloqueo), BorderLayout.CENTER);
+
+        JLabel info = new JLabel("Simula un bloqueo entre dos usuarios y verifica si el grafo sigue siendo conexo (BFS).");
+        info.setBorder(new EmptyBorder(5, 0, 0, 0));
+        p.add(info, BorderLayout.SOUTH);
+        return p;
+    }
+
+    private void actualizarCombosBloqueo() {
+        if (comboBloqueador == null || comboBloqueado == null) return;
+        comboBloqueador.removeAllItems();
+        comboBloqueado.removeAllItems();
+        for (Usuario u : servicio.getUsuarios()) {
+            comboBloqueador.addItem(u);
+            comboBloqueado.addItem(u);
+        }
+        if (comboBloqueado.getItemCount() > 1) {
+            comboBloqueado.setSelectedIndex(1);
+        }
+    }
+
+    private void ejecutarBloqueo() {
+        Usuario bloqueador = (Usuario) comboBloqueador.getSelectedItem();
+        Usuario bloqueado = (Usuario) comboBloqueado.getSelectedItem();
+        if (bloqueador == null || bloqueado == null) return;
+        if (bloqueador.equals(bloqueado)) {
+            areaBloqueo.setText("Error: el bloqueador y el bloqueado deben ser usuarios distintos.");
+            return;
+        }
+
+        try {
+            ConectividadBFS.ResultadoBloqueo resultado = servicio.simularBloqueo(bloqueador, bloqueado);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== Simulación de Bloqueo (BFS) ===\n\n");
+            sb.append("Bloqueador: ").append(bloqueador.getNombre()).append("\n");
+            sb.append("Bloqueado:  ").append(bloqueado.getNombre()).append("\n\n");
+
+            if (resultado.esConexo()) {
+                sb.append("RESULTADO: El grafo SIGUE SIENDO CONEXO.\n");
+                sb.append("Existen caminos alternativos que mantienen la conectividad.\n");
+            } else {
+                sb.append("RESULTADO: El grafo QUEDÓ DESCONECTADO.\n");
+                sb.append("Se detectaron ").append(resultado.getComponentes().size())
+                  .append(" componentes conexas:\n\n");
+
+                for (int i = 0; i < resultado.getComponentes().size(); i++) {
+                    sb.append("  Componente ").append(i + 1).append(": ");
+                    List<Usuario> comp = resultado.getComponentes().get(i);
+                    for (int j = 0; j < comp.size(); j++) {
+                        if (j > 0) sb.append(", ");
+                        sb.append(comp.get(j).getNombre());
+                    }
+                    sb.append("\n");
+                }
+
+                sb.append("\nConexiones sugeridas para restaurar la conectividad:\n\n");
+                for (Conexion c : resultado.getConexionesRestauracion()) {
+                    sb.append("  ").append(c.getOrigen().getNombre())
+                      .append(" --(").append(c.getPeso()).append(")--> ")
+                      .append(c.getDestino().getNombre()).append("\n");
+                }
+            }
+
+            sb.append("\n--- Análisis de complejidad ---\n");
+            sb.append("BFS para detección de componentes: O(V + E)\n");
+            sb.append("V = ").append(servicio.getGrafoCompleto().getUsuarios().size())
+              .append(" usuarios, E = ").append(servicio.getGrafoCompleto().getConexiones().size())
+              .append(" conexiones\n");
+
+            areaBloqueo.setText(sb.toString());
+        } catch (Exception ex) {
+            areaBloqueo.setText("Error: " + ex.getMessage());
+        }
+    }
+
+    // --- Pestaña 5: Asignación de Administradores (DP bitmask) ---
+
+    private JPanel panelAsignacion() {
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        p.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JButton btnAsignar = new JButton("Calcular asignación óptima (DP bitmask)");
+        btnAsignar.addActionListener(e -> ejecutarAsignacion());
+        p.add(btnAsignar, BorderLayout.NORTH);
+
+        JPanel content = new JPanel(new GridLayout(1, 2, 10, 0));
+        areaMatrizCostos = new JTextArea(18, 25);
+        areaMatrizCostos.setEditable(false);
+        areaMatrizCostos.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        content.add(new JScrollPane(areaMatrizCostos));
+
+        areaAsignacion = new JTextArea(18, 25);
+        areaAsignacion.setEditable(false);
+        areaAsignacion.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        content.add(new JScrollPane(areaAsignacion));
+
+        p.add(content, BorderLayout.CENTER);
+
+        JLabel info = new JLabel("Izq: matriz de ineficiencias (grupo x admin). Der: asignación óptima que minimiza la ineficiencia total.");
+        info.setBorder(new EmptyBorder(5, 0, 0, 0));
+        p.add(info, BorderLayout.SOUTH);
+        return p;
+    }
+
+    private void actualizarMatrizCostos() {
+        if (areaMatrizCostos == null) return;
+        List<Grupo> grupos = servicio.getGrupos();
+        List<Administrador> admins = servicio.getAdministradores();
+        int[][] costos = servicio.getCostoAsignacion();
+
+        if (grupos.isEmpty() || admins.isEmpty() || costos == null) {
+            areaMatrizCostos.setText("No hay datos de asignación cargados.");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder("Matriz de ineficiencias:\n\n");
+
+        // Header con nombres de admins
+        sb.append(String.format("%-14s", ""));
+        for (Administrador a : admins) {
+            sb.append(String.format("%-14s", a.getNombre()));
+        }
+        sb.append("\n");
+
+        // Filas: cada grupo con sus costos
+        for (int i = 0; i < grupos.size(); i++) {
+            sb.append(String.format("%-14s", grupos.get(i).getNombre()));
+            for (int j = 0; j < admins.size(); j++) {
+                sb.append(String.format("%-14d", costos[i][j]));
+            }
+            sb.append("\n");
+        }
+        areaMatrizCostos.setText(sb.toString());
+    }
+
+    private void ejecutarAsignacion() {
+        try {
+            AsignacionAdminDP.ResultadoAsignacion resultado = servicio.calcularAsignacionOptima();
+
+            StringBuilder sb = new StringBuilder("=== Asignación Óptima (DP bitmask) ===\n\n");
+            int[] asig = resultado.getAsignacion();
+            String[] nombresGrupos = resultado.getNombresGrupos();
+            String[] nombresAdmins = resultado.getNombresAdmins();
+            int[][] costos = resultado.getCostos();
+
+            for (int i = 0; i < asig.length; i++) {
+                sb.append("  ").append(nombresGrupos[i])
+                  .append(" ← ").append(nombresAdmins[asig[i]])
+                  .append(" (ineficiencia: ").append(costos[i][asig[i]]).append(")\n");
+            }
+
+            sb.append("\nIneficiencia total mínima: ").append(resultado.getCostoTotal()).append("\n");
+
+            sb.append("\n--- Análisis de complejidad ---\n");
+            int n = nombresAdmins.length;
+            sb.append("DP bitmask: O(n * 2^n) donde n = ").append(n).append("\n");
+            sb.append("Estados evaluados: ").append(n).append(" * 2^").append(n)
+              .append(" = ").append(n * (1 << n)).append("\n");
+            sb.append("Espacio: O(2^").append(n).append(") = ").append(1 << n).append(" estados\n");
+
+            areaAsignacion.setText(sb.toString());
+        } catch (Exception ex) {
+            areaAsignacion.setText("Error: " + ex.getMessage());
         }
     }
 
