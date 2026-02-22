@@ -33,5 +33,15 @@
     { "likes": 6, "comentarios": 3, "tamanio": 45 },
     { "likes": 0, "comentarios": 1, "tamanio": 10 },
     { "likes": 7, "comentarios": 4, "tamanio": 55 }
+  ],
+  "grupos": [
+    { "id": 1, "nombre": "Programacion" },
+    { "id": 2, "nombre": "Arte" },
+    { "id": 3, "nombre": "Ciencias" }
+  ],
+  "administradores": [
+    { "id": 1, "nombre": "Admin-Torres", "eficiencias": [90, 60, 70] },
+    { "id": 2, "nombre": "Admin-Vera",   "eficiencias": [50, 85, 65] },
+    { "id": 3, "nombre": "Admin-Cruz",   "eficiencias": [70, 55, 95] }
   ]
 }

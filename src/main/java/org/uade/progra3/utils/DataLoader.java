@@ -11,7 +11,9 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.uade.progra3.modelo.Administrador;
 import org.uade.progra3.modelo.Conexion;
+import org.uade.progra3.modelo.Grupo;
 import org.uade.progra3.modelo.Publicacion;
 import org.uade.progra3.grafos.Grafo;
 import org.uade.progra3.modelo.Usuario;
@@ -23,12 +25,16 @@ public class DataLoader {
     private List<Usuario> usuarios;
     private List<Conexion> conexiones;
     private List<Publicacion> publicaciones;
+    private List<Grupo> grupos;
+    private List<Administrador> administradores;
     private Grafo grafo;
 
     public DataLoader(Grafo grafo) {
         this.usuarios = new ArrayList<>();
         this.conexiones = new ArrayList<>();
         this.publicaciones = new ArrayList<>();
+        this.grupos = new ArrayList<>();
+        this.administradores = new ArrayList<>();
         this.grafo = grafo;
     }
 
@@ -99,8 +105,33 @@ public class DataLoader {
             }
         }
 
+        // Parsear grupos (opcional)
+        if (root.has("grupos")) {
+            JSONArray jsonGrupos = root.getJSONArray("grupos");
+            for (int i = 0; i < jsonGrupos.length(); i++) {
+                JSONObject obj = jsonGrupos.getJSONObject(i);
+                grupos.add(new Grupo(obj.getInt("id"), obj.getString("nombre")));
+            }
+        }
+
+        // Parsear administradores (opcional); el array "eficiencias" tiene un valor por grupo
+        if (root.has("administradores")) {
+            JSONArray jsonAdmins = root.getJSONArray("administradores");
+            for (int i = 0; i < jsonAdmins.length(); i++) {
+                JSONObject obj = jsonAdmins.getJSONObject(i);
+                JSONArray jsonEf = obj.getJSONArray("eficiencias");
+                int[] eficiencias = new int[jsonEf.length()];
+                for (int j = 0; j < jsonEf.length(); j++) {
+                    eficiencias[j] = jsonEf.getInt(j);
+                }
+                administradores.add(new Administrador(obj.getInt("id"), obj.getString("nombre"), eficiencias));
+            }
+        }
+
         System.out.println("Datos cargados: " + usuarios.size() + " usuarios, " + conexiones.size() + " conexiones"
-                + (publicaciones.isEmpty() ? "" : ", " + publicaciones.size() + " publicaciones") + ". \n");
+                + (publicaciones.isEmpty() ? "" : ", " + publicaciones.size() + " publicaciones")
+                + (grupos.isEmpty() ? "" : ", " + grupos.size() + " grupos, " + administradores.size() + " administradores")
+                + ". \n");
     }
 
     private static Publicacion crearPublicacion(int cantidadLikes, int cantidadComentarios, int tamanio) {
@@ -121,5 +152,13 @@ public class DataLoader {
 
     public List<Publicacion> getPublicaciones() {
         return publicaciones;
+    }
+
+    public List<Grupo> getGrupos() {
+        return grupos;
+    }
+
+    public List<Administrador> getAdministradores() {
+        return administradores;
     }
 }
