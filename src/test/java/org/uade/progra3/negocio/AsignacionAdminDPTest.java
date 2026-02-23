@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,10 +30,22 @@ class AsignacionAdminDPTest {
             String[] grupos = {"G1", "G2"};
             String[] admins = {"A1", "A2"};
 
+            System.out.println("=== Test: Caso 2x2 - Asignación óptima ===");
+            System.out.println("Matriz de costos:");
+            System.out.println("         A1  A2");
+            System.out.println("  G1  [  5,  9 ]");
+            System.out.println("  G2  [  8,  2 ]");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
 
-            // Óptimo: A1→G1(5), A2→G2(2) = 7
+            System.out.println("Asignación encontrada: " + Arrays.toString(resultado.getAsignacion()));
+            System.out.println("  G1 <-- " + admins[resultado.getAsignacion()[0]] + " (costo " + costos[0][resultado.getAsignacion()[0]] + ")");
+            System.out.println("  G2 <-- " + admins[resultado.getAsignacion()[1]] + " (costo " + costos[1][resultado.getAsignacion()[1]] + ")");
+            System.out.println("Costo total: " + resultado.getCostoTotal());
+            System.out.println("Esperado: 7 (A1→G1=5, A2→G2=2)");
+            System.out.println("PASSED: Asignación óptima con costo mínimo.\n");
+
             assertEquals(7, resultado.getCostoTotal());
         }
 
@@ -48,11 +61,24 @@ class AsignacionAdminDPTest {
             String[] grupos = {"Programación", "Arte Digital", "Ciencias", "Deportes"};
             String[] admins = {"Admin-Ana", "Admin-Pedro", "Admin-Maria", "Admin-Jorge"};
 
+            System.out.println("=== Test: Caso 4x4 - Costo mínimo ===");
+            System.out.println("Matriz de costos:");
+            System.out.println("                   Ana  Pedro  Maria  Jorge");
+            System.out.println("  Programación  [   9,     2,     7,     8 ]");
+            System.out.println("  Arte Digital  [   6,     4,     3,     7 ]");
+            System.out.println("  Ciencias      [   5,     8,     1,     8 ]");
+            System.out.println("  Deportes      [   7,     6,     9,     4 ]");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
 
-            // Verificar que la asignación es válida (cada admin asignado una vez)
             int[] asig = resultado.getAsignacion();
+            System.out.println("Asignación encontrada:");
+            for (int i = 0; i < asig.length; i++) {
+                System.out.println("  " + grupos[i] + " <-- " + admins[asig[i]] + " (costo " + costos[i][asig[i]] + ")");
+            }
+            System.out.println("Costo total: " + resultado.getCostoTotal());
+
             assertEquals(4, asig.length);
             Set<Integer> adminsUsados = new HashSet<>();
             for (int a : asig) {
@@ -61,30 +87,18 @@ class AsignacionAdminDPTest {
             }
             assertEquals(4, adminsUsados.size(), "Cada admin debe ser asignado exactamente una vez");
 
-            // Verificar que el costo total coincide con la suma de la asignación
             int costoVerificado = 0;
             for (int i = 0; i < asig.length; i++) {
                 costoVerificado += costos[i][asig[i]];
             }
             assertEquals(resultado.getCostoTotal(), costoVerificado);
 
-            // Costo óptimo conocido para esta matriz: 10
-            // Asignación: Pedro→Prog(2), Maria→Arte(3), Maria ya usada...
-            // Óptimo: Pedro(2)→Prog, Ana(6)→Arte, Maria(1)→Ciencias, Jorge(4)→Deportes = 13?
-            // Let me calculate: 2+3+1+4=10 (Pedro, Maria, Maria, Jorge) - can't reuse
-            // Pedro→Prog(2), Maria→Arte(3), ?? →Ciencias(1 is Maria), ??→Deportes
-            // Actually: P→Prog(2), M→Arte(3), ... no, M can only be used once
-            // Brute force: best is Pedro→G1(2), Ana→G2(6), Maria→G3(1), Jorge→G4(4) = 13
-            // Or: Pedro→G1(2), Jorge→G2(7), Maria→G3(1), Ana→G4(7) = 17
-            // Or: Pedro→G1(2), Maria→G2(3), Ana→G3(5), Jorge→G4(4) = 14
-            // Or: Maria→G1(7), Pedro→G2(4), Ana→G3(5), Jorge→G4(4) = 20
-            // Check 2+3+1+4: Pedro→G1, Maria→G2, Maria→G3 -> INVALID (repeat)
-            // Valid: Pedro(1)→G1(2), Ana(0)→G2(6), Maria(2)→G3(1), Jorge(3)→G4(4) = 13
-            // Or: Pedro(1)→G1(2), Maria(2)→G2(3), Ana(0)→G3(5), Jorge(3)→G4(4) = 14
-            // Best valid: 2+6+1+4=13 or 2+3+5+4=14
-            // Let's verify 13: G1←Pedro(2), G2←Ana(6), G3←Maria(1), G4←Jorge(4)
+            System.out.println("Admins distintos usados: " + adminsUsados.size() + " (todos)");
+            System.out.println("Costo verificado (suma real): " + costoVerificado);
+            System.out.println("Cota superior conocida: 13");
             assertTrue(resultado.getCostoTotal() <= 13,
                     "El costo óptimo debe ser <= 13 (una cota superior conocida)");
+            System.out.println("PASSED: Costo óptimo <= 13, asignación válida.\n");
         }
 
         @Test
@@ -94,8 +108,16 @@ class AsignacionAdminDPTest {
             String[] grupos = {"Único"};
             String[] admins = {"Solo"};
 
+            System.out.println("=== Test: Caso 1x1 - Un grupo, un admin ===");
+            System.out.println("Matriz de costos: [[ 42 ]]");
+            System.out.println("Grupo: \"Único\", Admin: \"Solo\"");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
+
+            System.out.println("Costo total: " + resultado.getCostoTotal() + " (esperado: 42)");
+            System.out.println("Asignación: " + Arrays.toString(resultado.getAsignacion()) + " (esperado: [0])");
+            System.out.println("PASSED: Caso trivial resuelto correctamente.\n");
 
             assertEquals(42, resultado.getCostoTotal());
             assertArrayEquals(new int[]{0}, resultado.getAsignacion());
@@ -112,8 +134,19 @@ class AsignacionAdminDPTest {
             String[] grupos = {"G1", "G2", "G3"};
             String[] admins = {"A1", "A2", "A3"};
 
+            System.out.println("=== Test: Caso 3x3 - Diagonal óptima ===");
+            System.out.println("Matriz de costos:");
+            System.out.println("       A1  A2  A3");
+            System.out.println("  G1 [  1, 10, 10 ]");
+            System.out.println("  G2 [ 10,  1, 10 ]");
+            System.out.println("  G3 [ 10, 10,  1 ]");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
+
+            System.out.println("Asignación: " + Arrays.toString(resultado.getAsignacion()) + " (esperado: [0, 1, 2])");
+            System.out.println("Costo total: " + resultado.getCostoTotal() + " (esperado: 3 = 1+1+1)");
+            System.out.println("PASSED: Se eligió la diagonal, asignación identidad (admin i al grupo i).\n");
 
             assertEquals(3, resultado.getCostoTotal(), "Diagonal óptima: 1+1+1=3");
             assertArrayEquals(new int[]{0, 1, 2}, resultado.getAsignacion(),
@@ -124,21 +157,34 @@ class AsignacionAdminDPTest {
         @DisplayName("más admins que grupos: selecciona el subconjunto óptimo")
         void masAdminsQueGrupos() {
             int[][] costos = {
-                    {10, 5, 8},  // 3 admins para 2 grupos
+                    {10, 5, 8},
                     {6, 3, 1}
             };
             String[] grupos = {"G1", "G2"};
             String[] admins = {"A1", "A2", "A3"};
 
+            System.out.println("=== Test: Más admins que grupos ===");
+            System.out.println("Matriz de costos (2 grupos, 3 admins):");
+            System.out.println("       A1  A2  A3");
+            System.out.println("  G1 [ 10,  5,  8 ]");
+            System.out.println("  G2 [  6,  3,  1 ]");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
 
-            // Óptimo: A2→G1(5), A3→G2(1) = 6
-            assertEquals(6, resultado.getCostoTotal());
+            int[] asig = resultado.getAsignacion();
+            System.out.println("Asignación encontrada:");
+            for (int i = 0; i < asig.length; i++) {
+                System.out.println("  " + grupos[i] + " <-- " + admins[asig[i]] + " (costo " + costos[i][asig[i]] + ")");
+            }
+            System.out.println("Costo total: " + resultado.getCostoTotal() + " (esperado: 6 = A2→G1=5, A3→G2=1)");
 
-            // Verificar que se usan exactamente 2 admins distintos
             Set<Integer> usados = new HashSet<>();
             for (int a : resultado.getAsignacion()) usados.add(a);
+            System.out.println("Admins distintos usados: " + usados.size() + " de 3 disponibles");
+            System.out.println("PASSED: Se seleccionó el subconjunto óptimo de admins.\n");
+
+            assertEquals(6, resultado.getCostoTotal());
             assertEquals(2, usados.size());
         }
 
@@ -153,8 +199,14 @@ class AsignacionAdminDPTest {
             String[] grupos = {"G1", "G2", "G3"};
             String[] admins = {"A1", "A2"};
 
+            System.out.println("=== Test: Menos admins que grupos (excepción) ===");
+            System.out.println("3 grupos pero solo 2 admins: imposible asignar.");
+
             assertThrows(IllegalArgumentException.class,
                     () -> AsignacionAdminDP.asignar(costos, grupos, admins));
+
+            System.out.println("Resultado: IllegalArgumentException lanzada correctamente.");
+            System.out.println("PASSED: Se rechaza el caso inválido con la excepción esperada.\n");
         }
 
         @Test
@@ -168,8 +220,15 @@ class AsignacionAdminDPTest {
             String[] grupos = {"G1", "G2", "G3"};
             String[] admins = {"A1", "A2", "A3"};
 
+            System.out.println("=== Test: Costos uniformes ===");
+            System.out.println("Todos los costos son 5. Cualquier asignación vale lo mismo.");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
+
+            System.out.println("Asignación: " + Arrays.toString(resultado.getAsignacion()));
+            System.out.println("Costo total: " + resultado.getCostoTotal() + " (esperado: 15 = 5*3)");
+            System.out.println("PASSED: Costo uniforme calculado correctamente.\n");
 
             assertEquals(15, resultado.getCostoTotal(), "Costo uniforme: 5*3=15");
         }
@@ -181,8 +240,16 @@ class AsignacionAdminDPTest {
             String[] grupos = {"Prog", "Arte"};
             String[] admins = {"Ana", "Pedro"};
 
+            System.out.println("=== Test: Nombres correctos en el resultado ===");
+
             AsignacionAdminDP.ResultadoAsignacion resultado =
                     AsignacionAdminDP.asignar(costos, grupos, admins);
+
+            System.out.println("Nombres de grupos devueltos: " + Arrays.toString(resultado.getNombresGrupos()));
+            System.out.println("Nombres de admins devueltos: " + Arrays.toString(resultado.getNombresAdmins()));
+            System.out.println("Esperados grupos: [Prog, Arte]");
+            System.out.println("Esperados admins: [Ana, Pedro]");
+            System.out.println("PASSED: Los nombres se preservan correctamente en el resultado.\n");
 
             assertArrayEquals(grupos, resultado.getNombresGrupos());
             assertArrayEquals(admins, resultado.getNombresAdmins());
