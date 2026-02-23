@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Informe de Mejoras - Problemas Opcionales 1 y 3</title>
+  <style>
+    body {
+      font-family: "Calibri", "Segoe UI", Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      max-width: 210mm;
+      margin: 40px auto;
+      padding: 0 30px;
+    }
+    h1 {
+      font-size: 18pt;
+      text-align: center;
+      color: #1a1a1a;
+      border-bottom: 2px solid #2c3e50;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 12pt;
+      color: #555;
+      margin-bottom: 30px;
+    }
+    h2 {
+      font-size: 15pt;
+      color: #2c3e50;
+      border-bottom: 1px solid #bdc3c7;
+      padding-bottom: 6px;
+      margin-top: 36px;
+    }
+    h3 {
+      font-size: 12pt;
+      color: #34495e;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    p, li {
+      text-align: justify;
+    }
+    ul, ol {
+      margin-left: 10px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 4px;
+    }
+    pre {
+      background-color: #f4f6f8;
+      border: 1px solid #d5dce4;
+      border-radius: 4px;
+      padding: 14px 16px;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 9.5pt;
+      line-height: 1.45;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    code {
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 9.5pt;
+      background-color: #eef1f5;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .complexity-table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+    }
+    .complexity-table th, .complexity-table td {
+      border: 1px solid #bdc3c7;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    .complexity-table th {
+      background-color: #ecf0f1;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .file-list {
+      background-color: #fafbfc;
+      border: 1px solid #e1e4e8;
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin: 12px 0;
+    }
+    .file-list code {
+      background-color: transparent;
+    }
+    .note {
+      background-color: #eaf4fe;
+      border-left: 4px solid #3498db;
+      padding: 10px 14px;
+      margin: 14px 0;
+      font-size: 10.5pt;
+    }
+    .separator {
+      border: none;
+      border-top: 2px solid #2c3e50;
+      margin: 40px 0;
+    }
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ================================================================== -->
+<!--                       PORTADA / ENCABEZADO                         -->
+<!-- ================================================================== -->
+
+<h1>Trabajo Pr&aacute;ctico &mdash; Algoritmos III</h1>
+<p class="subtitle">
+  Programaci&oacute;n III: An&aacute;lisis y Dise&ntilde;o de Algoritmos<br>
+  Informe de Mejoras: Problemas Opcionales 1 y 3
+</p>
+
+<p>
+  El presente documento describe las dos mejoras implementadas sobre el prototipo de red social,
+  correspondientes a los <strong>Problemas Opcionales 1 y 3</strong>. Para cada mejora se detalla
+  el problema que se resuelve, la estrategia algor&iacute;tmica elegida, el an&aacute;lisis de complejidad,
+  la explicaci&oacute;n de la implementaci&oacute;n y los fragmentos de c&oacute;digo relevantes.
+</p>
+
+<p><strong>Algoritmos aplicados:</strong></p>
+<ul>
+  <li><strong>Problema Opcional 1:</strong> BFS (Breadth-First Search) &mdash; detecci&oacute;n de componentes conexas tras un bloqueo.</li>
+  <li><strong>Problema Opcional 3:</strong> Programaci&oacute;n Din&aacute;mica con m&aacute;scara de bits (bitmask DP) &mdash; asignaci&oacute;n &oacute;ptima de administradores.</li>
+</ul>
+
+<!-- ================================================================== -->
+<!--                     PROBLEMA OPCIONAL 1                            -->
+<!-- ================================================================== -->
+
+<hr class="separator">
+
+<h2>Problema Opcional 1: Simulaci&oacute;n de Bloqueos y Conexiones Alternativas</h2>
+
+<h3>1.1. Problema que se intenta resolver</h3>
+
+<p>
+  En una red social, cuando un usuario bloquea a otro se elimina la conexi&oacute;n directa entre ambos.
+  Esto puede tener un efecto colateral grave: si esa conexi&oacute;n era un <em>puente</em> (la &uacute;nica v&iacute;a
+  que un&iacute;a dos regiones del grafo), la red queda <strong>desconectada</strong> en dos o m&aacute;s
+  componentes aisladas, impidiendo que ciertos usuarios se comuniquen entre s&iacute;.
+</p>
+
+<p>El problema se descompone en tres subproblemas:</p>
+<ol>
+  <li><strong>Detecci&oacute;n:</strong> Dado un bloqueo entre los usuarios A y B, &iquest;el grafo resultante sigue siendo conexo?</li>
+  <li><strong>Diagn&oacute;stico:</strong> Si no es conexo, &iquest;cu&aacute;ntas componentes conexas se forman y qu&eacute; usuarios pertenecen a cada una?</li>
+  <li><strong>Restauraci&oacute;n:</strong> &iquest;Cu&aacute;l es el n&uacute;mero m&iacute;nimo de conexiones nuevas necesarias para reconectar el grafo, y entre qu&eacute; usuarios deber&iacute;an crearse?</li>
+</ol>
+
+<h3>1.2. Estrategia elegida: BFS (Breadth-First Search)</h3>
+
+<p>
+  Se eligi&oacute; <strong>BFS (B&uacute;squeda en Anchura)</strong> como algoritmo principal por las siguientes razones:
+</p>
+<ul>
+  <li>Es el algoritmo est&aacute;ndar para encontrar <strong>componentes conexas</strong> en un grafo no ponderado, que es exactamente lo que se necesita despu&eacute;s de eliminar una arista.</li>
+  <li>Tiene complejidad &oacute;ptima <strong>O(V + E)</strong>, ya que visita cada nodo y arista exactamente una vez.</li>
+  <li>Su implementaci&oacute;n iterativa con cola evita problemas de desbordamiento de pila (a diferencia de DFS recursivo) para grafos grandes.</li>
+  <li>El recorrido por niveles permite descubrir la componente conexa completa de un nodo de forma sistem&aacute;tica.</li>
+</ul>
+
+<p><strong>Descripci&oacute;n de la estrategia paso a paso:</strong></p>
+<ol>
+  <li><strong>Construcci&oacute;n de la adyacencia modificada:</strong> Se genera una lista de adyacencia <em>no dirigida</em> a partir del grafo original, excluyendo la conexi&oacute;n bloqueada en ambas direcciones. El grafo original es dirigido, pero para evaluar la conectividad en una red social (donde la amistad es bidireccional) se trata como no dirigido.</li>
+  <li><strong>BFS iterativo para componentes:</strong> Se recorren todos los nodos. Para cada nodo a&uacute;n no visitado, se inicia un BFS que descubre toda su componente conexa. El BFS utiliza una cola FIFO: encola el nodo origen, y mientras la cola no est&eacute; vac&iacute;a, desencola un nodo, y para cada vecino no visitado lo marca y lo encola.</li>
+  <li><strong>Evaluaci&oacute;n de conectividad:</strong> Si se encontr&oacute; m&aacute;s de una componente, el grafo est&aacute; desconectado.</li>
+  <li><strong>C&aacute;lculo de restauraci&oacute;n:</strong> Para <em>C</em> componentes se necesitan exactamente <em>C &minus; 1</em> conexiones nuevas. Se conectan componentes adyacentes buscando, cuando sea posible, aristas de bajo peso del grafo original.</li>
+</ol>
+
+<h3>1.3. Complejidad del algoritmo y del programa</h3>
+
+<table class="complexity-table">
+  <tr>
+    <th>Aspecto</th>
+    <th>Complejidad</th>
+    <th>Justificaci&oacute;n</th>
+  </tr>
+  <tr>
+    <td>Construcci&oacute;n de adyacencia</td>
+    <td>O(V + E)</td>
+    <td>Se recorren todos los usuarios (V) para inicializar y todas las conexiones (E) para poblar la lista de adyacencia.</td>
+  </tr>
+  <tr>
+    <td>BFS (detecci&oacute;n de componentes)</td>
+    <td>O(V + E)</td>
+    <td>Cada nodo se encola y desencola exactamente una vez; cada arista se examina dos veces (una por cada extremo en el grafo no dirigido).</td>
+  </tr>
+  <tr>
+    <td>C&aacute;lculo de restauraci&oacute;n</td>
+    <td>O(C &middot; E)</td>
+    <td>Para cada par de componentes adyacentes (C &minus; 1 pares), se recorren las conexiones originales buscando la de menor peso. En la pr&aacute;ctica C es peque&ntilde;o.</td>
+  </tr>
+  <tr>
+    <td><strong>Total temporal</strong></td>
+    <td><strong>O(V + E)</strong></td>
+    <td>Dominado por la fase de BFS; la restauraci&oacute;n es O(C &middot; E) pero C &le; V y t&iacute;picamente C &laquo; V.</td>
+  </tr>
+  <tr>
+    <td><strong>Total espacial</strong></td>
+    <td><strong>O(V + E)</strong></td>
+    <td>Lista de adyacencia no dirigida + conjunto de visitados + cola BFS.</td>
+  </tr>
+</table>
+
+<h3>1.4. Explicaci&oacute;n de la implementaci&oacute;n</h3>
+
+<p>
+  La mejora se implement&oacute; en la clase <code>ConectividadBFS</code> dentro del paquete
+  <code>org.uade.progra3.grafos</code>. La clase es puramente est&aacute;tica (todos sus m&eacute;todos son
+  <code>static</code>) y contiene una clase interna <code>ResultadoBloqueo</code> que encapsula el
+  resultado de la simulaci&oacute;n.
+</p>
+
+<p><strong>Flujo de ejecuci&oacute;n:</strong></p>
+<ol>
+  <li>El m&eacute;todo p&uacute;blico <code>simularBloqueo(grafo, bloqueador, bloqueado)</code> act&uacute;a como punto de entrada.</li>
+  <li>Llama a <code>construirAdyacenciaNoDir()</code> que recorre todas las conexiones del grafo y construye un <code>Map&lt;Usuario, List&lt;Usuario&gt;&gt;</code> excluyendo la conexi&oacute;n bloqueada.</li>
+  <li>Llama a <code>encontrarComponentesBFS()</code> que itera sobre todos los usuarios y, para cada usuario no visitado, lanza un <code>bfs()</code> que explora su componente conexa completa usando una <code>Queue&lt;Usuario&gt;</code> (cola FIFO).</li>
+  <li>Si hay m&aacute;s de una componente, llama a <code>calcularRestauracion()</code> que sugiere <em>C &minus; 1</em> conexiones entre componentes consecutivas.</li>
+  <li>Retorna un <code>ResultadoBloqueo</code> con: si el grafo es conexo, la lista de componentes, y las conexiones de restauraci&oacute;n sugeridas.</li>
+</ol>
+
+<p><strong>Integraci&oacute;n con el resto del sistema:</strong></p>
+<ul>
+  <li><code>RedSocialServicio</code> expone el m&eacute;todo <code>simularBloqueo()</code> que delega en <code>ConectividadBFS</code>.</li>
+  <li><code>RedSocialFrame</code> agrega una nueva pesta&ntilde;a &ldquo;Bloqueo (BFS)&rdquo; con dos combo boxes para seleccionar usuarios y un &aacute;rea de texto para mostrar resultados.</li>
+  <li>No se modific&oacute; la estructura del grafo original: la simulaci&oacute;n trabaja sobre una copia de la adyacencia.</li>
+</ul>
+
+<h3>1.5. Fragmentos de c&oacute;digo</h3>
+
+<p><strong>M&eacute;todo principal &mdash; <code>simularBloqueo()</code></strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/grafos/ConectividadBFS.java</code></em></p>
+<pre>
+public static ResultadoBloqueo simularBloqueo(Grafo grafo,
+                                              Usuario bloqueador,
+                                              Usuario bloqueado) {
+    // 1. Construir adyacencia no dirigida sin la arista bloqueada
+    Map&lt;Usuario, List&lt;Usuario&gt;&gt; adyacencia =
+            construirAdyacenciaNoDir(grafo, bloqueador, bloqueado);
+
+    // 2. Encontrar componentes conexas mediante BFS
+    List&lt;List&lt;Usuario&gt;&gt; componentes =
+            encontrarComponentesBFS(adyacencia, grafo.getUsuarios());
+
+    // 3. Evaluar conectividad y calcular restauraci&oacute;n si es necesario
+    boolean conexo = componentes.size() &lt;= 1;
+    List&lt;Conexion&gt; restauracion = new ArrayList&lt;&gt;();
+
+    if (!conexo) {
+        restauracion = calcularRestauracion(componentes, grafo,
+                                            bloqueador, bloqueado);
+    }
+
+    return new ResultadoBloqueo(conexo, componentes, restauracion);
+}
+</pre>
+
+<p><strong>Construcci&oacute;n de adyacencia excluyendo la arista bloqueada</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/grafos/ConectividadBFS.java</code></em></p>
+<pre>
+private static Map&lt;Usuario, List&lt;Usuario&gt;&gt; construirAdyacenciaNoDir(
+        Grafo grafo, Usuario bloqueador, Usuario bloqueado) {
+    Map&lt;Usuario, List&lt;Usuario&gt;&gt; adj = new HashMap&lt;&gt;();
+    for (Usuario u : grafo.getUsuarios()) {
+        adj.put(u, new ArrayList&lt;&gt;());
+    }
+
+    for (Conexion c : grafo.getConexiones()) {
+        boolean esBloqueada =
+            (c.getOrigen().equals(bloqueador) &amp;&amp;
+             c.getDestino().equals(bloqueado)) ||
+            (c.getOrigen().equals(bloqueado) &amp;&amp;
+             c.getDestino().equals(bloqueador));
+        if (esBloqueada) continue;
+
+        adj.get(c.getOrigen()).add(c.getDestino());
+        adj.get(c.getDestino()).add(c.getOrigen());
+    }
+    return adj;
+}
+</pre>
+
+<p><strong>BFS iterativo para descubrir una componente conexa</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/grafos/ConectividadBFS.java</code></em></p>
+<pre>
+private static List&lt;Usuario&gt; bfs(Usuario origen,
+                                  Map&lt;Usuario, List&lt;Usuario&gt;&gt; adj,
+                                  Set&lt;Usuario&gt; visitados) {
+    List&lt;Usuario&gt; componente = new ArrayList&lt;&gt;();
+    Queue&lt;Usuario&gt; cola = new LinkedList&lt;&gt;();
+    cola.add(origen);
+    visitados.add(origen);
+
+    while (!cola.isEmpty()) {
+        Usuario actual = cola.poll();
+        componente.add(actual);
+
+        for (Usuario vecino : adj.getOrDefault(actual,
+                                     Collections.emptyList())) {
+            if (!visitados.contains(vecino)) {
+                visitados.add(vecino);
+                cola.add(vecino);
+            }
+        }
+    }
+    return componente;
+}
+</pre>
+
+<p><strong>C&aacute;lculo de conexiones de restauraci&oacute;n (C &minus; 1 conexiones)</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/grafos/ConectividadBFS.java</code></em></p>
+<pre>
+private static List&lt;Conexion&gt; calcularRestauracion(
+        List&lt;List&lt;Usuario&gt;&gt; componentes, Grafo grafo,
+        Usuario bloqueador, Usuario bloqueado) {
+    List&lt;Conexion&gt; nuevas = new ArrayList&lt;&gt;();
+
+    Map&lt;Usuario, Integer&gt; componenteDeUsuario = new HashMap&lt;&gt;();
+    for (int i = 0; i &lt; componentes.size(); i++) {
+        for (Usuario u : componentes.get(i)) {
+            componenteDeUsuario.put(u, i);
+        }
+    }
+
+    // Conectar componente i con componente i+1 (C-1 conexiones)
+    for (int i = 0; i &lt; componentes.size() - 1; i++) {
+        Conexion mejor = null;
+        for (Conexion c : grafo.getConexiones()) {
+            // Excluir la conexi&oacute;n bloqueada
+            boolean esBloqueada = /* ... verificaci&oacute;n ... */;
+            if (esBloqueada) continue;
+
+            int compOrigen = componenteDeUsuario.get(c.getOrigen());
+            int compDestino = componenteDeUsuario.get(c.getDestino());
+            if ((compOrigen == i &amp;&amp; compDestino == i + 1) ||
+                (compOrigen == i + 1 &amp;&amp; compDestino == i)) {
+                if (mejor == null || c.getPeso() &lt; mejor.getPeso()) {
+                    mejor = c;
+                }
+            }
+        }
+        if (mejor != null) {
+            nuevas.add(mejor);
+        } else {
+            nuevas.add(new Conexion(componentes.get(i).get(0),
+                                    componentes.get(i + 1).get(0), 1));
+        }
+    }
+    return nuevas;
+}
+</pre>
+
+<div class="file-list">
+  <strong>Archivos involucrados en esta mejora:</strong>
+  <ul>
+    <li><code>src/main/java/org/uade/progra3/grafos/ConectividadBFS.java</code> &mdash; <strong>Nuevo.</strong> Contiene el algoritmo BFS y la l&oacute;gica de simulaci&oacute;n de bloqueo.</li>
+    <li><code>src/main/java/org/uade/progra3/servicio/RedSocialServicio.java</code> &mdash; Modificado. Se agreg&oacute; el m&eacute;todo <code>simularBloqueo()</code> que delega en <code>ConectividadBFS</code>.</li>
+    <li><code>src/main/java/org/uade/progra3/ui/RedSocialFrame.java</code> &mdash; Modificado. Se agreg&oacute; la pesta&ntilde;a &ldquo;Bloqueo (BFS)&rdquo; con la interfaz de usuario.</li>
+    <li><code>src/test/java/org/uade/progra3/grafos/ConectividadBFSTest.java</code> &mdash; <strong>Nuevo.</strong> 8 tests unitarios con JUnit 5.</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<!--                     PROBLEMA OPCIONAL 3                            -->
+<!-- ================================================================== -->
+
+<hr class="separator">
+<div class="page-break"></div>
+
+<h2>Problema Opcional 3: Asignaci&oacute;n &Oacute;ptima de Administradores a Grupos</h2>
+
+<h3>2.1. Problema que se intenta resolver</h3>
+
+<p>
+  La red social cuenta con <em>n</em> grupos tem&aacute;ticos y <em>m</em> administradores disponibles
+  (con <em>m &ge; n</em>). Cada administrador tiene un <strong>valor de ineficiencia</strong> distinto para
+  cada grupo, representado en una matriz de costos <code>costos[i][j]</code> donde <em>i</em> es el grupo
+  y <em>j</em> es el administrador. El objetivo es encontrar una asignaci&oacute;n <strong>uno a uno</strong>
+  (cada grupo recibe exactamente un administrador, cada administrador administra como m&aacute;ximo un grupo)
+  que <strong>minimice la suma total de ineficiencias</strong>.
+</p>
+
+<p>
+  Este es una instancia del cl&aacute;sico <strong>Problema de Asignaci&oacute;n</strong> (<em>Assignment Problem</em>),
+  que es NP-hard en su forma general de fuerza bruta (O(n!) permutaciones), pero puede resolverse
+  eficientemente mediante programaci&oacute;n din&aacute;mica.
+</p>
+
+<p><strong>Ejemplo concreto</strong> (datos del prototipo):</p>
+<table class="complexity-table">
+  <tr>
+    <th></th>
+    <th>Admin-Ana</th>
+    <th>Admin-Pedro</th>
+    <th>Admin-Maria</th>
+    <th>Admin-Jorge</th>
+  </tr>
+  <tr>
+    <td><strong>Programaci&oacute;n</strong></td>
+    <td>9</td>
+    <td>2</td>
+    <td>7</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td><strong>Arte Digital</strong></td>
+    <td>6</td>
+    <td>4</td>
+    <td>3</td>
+    <td>7</td>
+  </tr>
+  <tr>
+    <td><strong>Ciencias</strong></td>
+    <td>5</td>
+    <td>8</td>
+    <td>1</td>
+    <td>8</td>
+  </tr>
+  <tr>
+    <td><strong>Deportes</strong></td>
+    <td>6</td>
+    <td>6</td>
+    <td>9</td>
+    <td>4</td>
+  </tr>
+</table>
+<p>
+  La asignaci&oacute;n &oacute;ptima resulta: Programaci&oacute;n &rarr; Admin-Pedro (costo 2),
+  Arte Digital &rarr; Admin-Ana (costo 6), Ciencias &rarr; Admin-Maria (costo 1),
+  Deportes &rarr; Admin-Jorge (costo 4). <strong>Costo total m&iacute;nimo: 13.</strong>
+</p>
+
+<h3>2.2. Estrategia elegida: Programaci&oacute;n Din&aacute;mica con m&aacute;scara de bits (Bitmask DP)</h3>
+
+<p>
+  Se eligi&oacute; <strong>Programaci&oacute;n Din&aacute;mica con bitmask</strong> por las siguientes razones:
+</p>
+<ul>
+  <li>Reduce la complejidad de <strong>O(n!)</strong> (fuerza bruta) a <strong>O(n &middot; 2<sup>n</sup>)</strong>, una mejora dr&aacute;stica. Para n = 4: de 24 a 64 operaciones; para n = 10: de 3.628.800 a 10.240.</li>
+  <li>Es aplicable directamente al problema de asignaci&oacute;n con restricci&oacute;n de exclusividad.</li>
+  <li>La m&aacute;scara de bits codifica de forma compacta el subconjunto de administradores ya utilizados, permitiendo una representaci&oacute;n de estado eficiente.</li>
+  <li>Permite reconstruir la soluci&oacute;n &oacute;ptima mediante un arreglo <code>parent[]</code> sin costo adicional significativo.</li>
+</ul>
+
+<p><strong>Descripci&oacute;n de la estrategia:</strong></p>
+<ol>
+  <li><strong>Estado:</strong> <code>dp[mask]</code> representa el costo m&iacute;nimo para asignar los administradores cuyos bits est&aacute;n encendidos en <code>mask</code> a los primeros <code>popcount(mask)</code> grupos.</li>
+  <li><strong>Caso base:</strong> <code>dp[0] = 0</code> (ning&uacute;n grupo asignado, costo cero).</li>
+  <li><strong>Transici&oacute;n:</strong> Para cada <code>mask</code>, sea <code>k = popcount(mask)</code>. El grupo que se est&aacute; asignando es <code>grupo = k - 1</code>. Para cada administrador <em>j</em> cuyo bit est&aacute; encendido en <code>mask</code>:
+    <br><code>dp[mask] = min(dp[mask], dp[mask ^ (1 &lt;&lt; j)] + costos[grupo][j])</code></li>
+  <li><strong>Respuesta:</strong> El m&iacute;nimo entre todos los <code>dp[mask]</code> donde <code>popcount(mask) = nGrupos</code>.</li>
+  <li><strong>Reconstrucci&oacute;n:</strong> Se usa un arreglo <code>parent[mask]</code> que almacena qu&eacute; administrador fue asignado en cada paso, permitiendo recorrer la soluci&oacute;n hacia atr&aacute;s.</li>
+</ol>
+
+<h3>2.3. Complejidad del algoritmo y del programa</h3>
+
+<table class="complexity-table">
+  <tr>
+    <th>Aspecto</th>
+    <th>Complejidad</th>
+    <th>Justificaci&oacute;n</th>
+  </tr>
+  <tr>
+    <td>Llenado de tabla DP</td>
+    <td>O(n &middot; 2<sup>n</sup>)</td>
+    <td>Se recorren 2<sup>n</sup> m&aacute;scaras, y para cada m&aacute;scara se eval&uacute;an hasta n administradores.</td>
+  </tr>
+  <tr>
+    <td>B&uacute;squeda del &oacute;ptimo</td>
+    <td>O(2<sup>n</sup>)</td>
+    <td>Se recorren todas las m&aacute;scaras buscando la de menor costo con exactamente nGrupos bits.</td>
+  </tr>
+  <tr>
+    <td>Reconstrucci&oacute;n</td>
+    <td>O(n)</td>
+    <td>Se recorre el arreglo parent n veces (una por grupo).</td>
+  </tr>
+  <tr>
+    <td><strong>Total temporal</strong></td>
+    <td><strong>O(n &middot; 2<sup>n</sup>)</strong></td>
+    <td>Dominado por la fase de llenado de la tabla DP.</td>
+  </tr>
+  <tr>
+    <td><strong>Total espacial</strong></td>
+    <td><strong>O(2<sup>n</sup>)</strong></td>
+    <td>Dos arreglos de tama&ntilde;o 2<sup>n</sup>: <code>dp[]</code> y <code>parent[]</code>.</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Comparaci&oacute;n con fuerza bruta:</strong> La fuerza bruta evaluar&iacute;a todas las permutaciones posibles con complejidad O(n!).
+  Para n = 20, eso ser&iacute;an 2.432.902.008.176.640.000 operaciones (inviable), mientras que DP bitmask requiere
+  20 &middot; 2<sup>20</sup> = 20.971.520 operaciones (instant&aacute;neo). Para los tama&ntilde;os t&iacute;picos de la red social
+  (n &le; 20), la soluci&oacute;n es pr&aacute;cticamente &oacute;ptima.
+</div>
+
+<h3>2.4. Explicaci&oacute;n de la implementaci&oacute;n</h3>
+
+<p>
+  La mejora se implement&oacute; en la clase <code>AsignacionAdminDP</code> dentro del paquete
+  <code>org.uade.progra3.negocio</code>. Se crearon adem&aacute;s dos clases de modelo:
+  <code>Grupo</code> y <code>Administrador</code>.
+</p>
+
+<p><strong>Flujo de ejecuci&oacute;n:</strong></p>
+<ol>
+  <li>El <code>DataLoader</code> lee del JSON la lista de grupos, administradores y la matriz de costos de asignaci&oacute;n.</li>
+  <li><code>RedSocialServicio.calcularAsignacionOptima()</code> prepara los arreglos de nombres y delega en <code>AsignacionAdminDP.asignar()</code>.</li>
+  <li>El m&eacute;todo <code>asignar()</code> ejecuta el algoritmo DP bitmask:
+    <ul>
+      <li>Inicializa <code>dp[0] = 0</code> y todo lo dem&aacute;s en <code>Integer.MAX_VALUE</code>.</li>
+      <li>Para cada m&aacute;scara de 1 a 2<sup>n</sup> &minus; 1, calcula cu&aacute;ntos bits tiene encendidos (<code>Integer.bitCount</code>) para determinar qu&eacute; grupo se est&aacute; asignando.</li>
+      <li>Si el n&uacute;mero de bits supera el n&uacute;mero de grupos, se salta esa m&aacute;scara.</li>
+      <li>Para cada administrador presente en la m&aacute;scara, se evalúa si asignarlo mejora el costo m&iacute;nimo.</li>
+    </ul>
+  </li>
+  <li>Busca la m&aacute;scara final con exactamente <code>nGrupos</code> bits y menor costo.</li>
+  <li>Reconstruye la asignaci&oacute;n recorriendo <code>parent[]</code> de atr&aacute;s hacia adelante.</li>
+  <li>Retorna un <code>ResultadoAsignacion</code> con: costo total, arreglo de asignaci&oacute;n, nombres y matriz de costos.</li>
+</ol>
+
+<p><strong>Integraci&oacute;n con el resto del sistema:</strong></p>
+<ul>
+  <li><code>demo-red-social.json</code> fue extendido con las secciones <code>"grupos"</code>, <code>"administradores"</code> y <code>"costoAsignacion"</code>.</li>
+  <li><code>DataLoader</code> fue modificado para parsear estas nuevas secciones opcionales.</li>
+  <li><code>RedSocialFrame</code> agrega una pesta&ntilde;a &ldquo;Asignaci&oacute;n admins (DP)&rdquo; que muestra la matriz de costos y el resultado &oacute;ptimo.</li>
+</ul>
+
+<h3>2.5. Fragmentos de c&oacute;digo</h3>
+
+<p><strong>M&eacute;todo principal &mdash; <code>asignar()</code>: Llenado de la tabla DP</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/negocio/AsignacionAdminDP.java</code></em></p>
+<pre>
+public static ResultadoAsignacion asignar(int[][] costos,
+                                          String[] nombresGrupos,
+                                          String[] nombresAdmins) {
+    int nGrupos = costos.length;
+    int nAdmins = costos[0].length;
+
+    if (nAdmins &lt; nGrupos) {
+        throw new IllegalArgumentException(
+            "No hay suficientes administradores para cubrir todos los grupos");
+    }
+
+    int totalMasks = 1 &lt;&lt; nAdmins;
+
+    // dp[mask] = costo m&iacute;nimo para asignar los admins del mask
+    //            a los primeros popcount(mask) grupos
+    int[] dp = new int[totalMasks];
+    int[] parent = new int[totalMasks];
+    Arrays.fill(dp, Integer.MAX_VALUE);
+    Arrays.fill(parent, -1);
+    dp[0] = 0;  // caso base: sin grupos asignados, costo 0
+
+    // Llenar la tabla DP
+    for (int mask = 1; mask &lt; totalMasks; mask++) {
+        int k = Integer.bitCount(mask);  // admins usados = grupos asignados
+        if (k &gt; nGrupos) continue;       // no necesitamos m&aacute;s admins que grupos
+
+        int grupo = k - 1;  // &iacute;ndice del grupo que se est&aacute; asignando
+
+        // Probar cada admin j que est&eacute; incluido en este mask
+        for (int j = 0; j &lt; nAdmins; j++) {
+            if ((mask &amp; (1 &lt;&lt; j)) == 0) continue;  // admin j no est&aacute; en mask
+
+            int maskPrevio = mask ^ (1 &lt;&lt; j);        // mask sin el admin j
+            if (dp[maskPrevio] == Integer.MAX_VALUE) continue;
+
+            int nuevoCosto = dp[maskPrevio] + costos[grupo][j];
+            if (nuevoCosto &lt; dp[mask]) {
+                dp[mask] = nuevoCosto;
+                parent[mask] = j;  // recordar la decisi&oacute;n
+            }
+        }
+    }
+
+    /* ... b&uacute;squeda del &oacute;ptimo y reconstrucci&oacute;n ... */
+}
+</pre>
+
+<p><strong>B&uacute;squeda del &oacute;ptimo y reconstrucci&oacute;n de la asignaci&oacute;n</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/negocio/AsignacionAdminDP.java</code></em></p>
+<pre>
+// Encontrar el mask &oacute;ptimo final (exactamente nGrupos bits encendidos)
+int mejorMask = -1;
+int mejorCosto = Integer.MAX_VALUE;
+for (int mask = 0; mask &lt; totalMasks; mask++) {
+    if (Integer.bitCount(mask) == nGrupos &amp;&amp; dp[mask] &lt; mejorCosto) {
+        mejorCosto = dp[mask];
+        mejorMask = mask;
+    }
+}
+
+// Reconstruir la asignaci&oacute;n mediante backtracking sobre parent[]
+int[] asignacion = new int[nGrupos];
+int mask = mejorMask;
+for (int g = nGrupos - 1; g &gt;= 0; g--) {
+    asignacion[g] = parent[mask];
+    mask = mask ^ (1 &lt;&lt; parent[mask]);
+}
+
+return new ResultadoAsignacion(mejorCosto, asignacion,
+                               nombresGrupos, nombresAdmins, costos);
+</pre>
+
+<p><strong>Integraci&oacute;n en el servicio</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/servicio/RedSocialServicio.java</code></em></p>
+<pre>
+public AsignacionAdminDP.ResultadoAsignacion calcularAsignacionOptima() {
+    List&lt;Grupo&gt; grupos = dataLoader.getGrupos();
+    List&lt;Administrador&gt; admins = dataLoader.getAdministradores();
+    int[][] costos = dataLoader.getCostoAsignacion();
+
+    if (grupos.isEmpty() || admins.isEmpty() || costos == null) {
+        throw new IllegalStateException(
+            "No hay datos de grupos/administradores cargados");
+    }
+
+    String[] nombresGrupos = grupos.stream()
+        .map(Grupo::getNombre).toArray(String[]::new);
+    String[] nombresAdmins = admins.stream()
+        .map(Administrador::getNombre).toArray(String[]::new);
+
+    return AsignacionAdminDP.asignar(costos, nombresGrupos, nombresAdmins);
+}
+</pre>
+
+<p><strong>Carga de datos desde JSON</strong>
+<br><em>Archivo: <code>src/main/java/org/uade/progra3/utils/DataLoader.java</code></em></p>
+<pre>
+// Parsear grupos (opcional)
+if (root.has("grupos")) {
+    JSONArray jsonGrupos = root.getJSONArray("grupos");
+    for (int i = 0; i &lt; jsonGrupos.length(); i++) {
+        JSONObject obj = jsonGrupos.getJSONObject(i);
+        grupos.add(new Grupo(obj.getLong("id"), obj.getString("nombre")));
+    }
+}
+
+// Parsear administradores (opcional)
+if (root.has("administradores")) {
+    JSONArray jsonAdmins = root.getJSONArray("administradores");
+    for (int i = 0; i &lt; jsonAdmins.length(); i++) {
+        JSONObject obj = jsonAdmins.getJSONObject(i);
+        administradores.add(new Administrador(
+            obj.getLong("id"), obj.getString("nombre")));
+    }
+}
+
+// Parsear matriz de costos de asignaci&oacute;n (opcional)
+if (root.has("costoAsignacion")) {
+    JSONArray jsonCostos = root.getJSONArray("costoAsignacion");
+    costoAsignacion = new int[jsonCostos.length()][];
+    for (int i = 0; i &lt; jsonCostos.length(); i++) {
+        JSONArray fila = jsonCostos.getJSONArray(i);
+        costoAsignacion[i] = new int[fila.length()];
+        for (int j = 0; j &lt; fila.length(); j++) {
+            costoAsignacion[i][j] = fila.getInt(j);
+        }
+    }
+}
+</pre>
+
+<div class="file-list">
+  <strong>Archivos involucrados en esta mejora:</strong>
+  <ul>
+    <li><code>src/main/java/org/uade/progra3/negocio/AsignacionAdminDP.java</code> &mdash; <strong>Nuevo.</strong> Contiene el algoritmo DP bitmask para la asignaci&oacute;n &oacute;ptima.</li>
+    <li><code>src/main/java/org/uade/progra3/modelo/Grupo.java</code> &mdash; <strong>Nuevo.</strong> Clase de modelo para los grupos.</li>
+    <li><code>src/main/java/org/uade/progra3/modelo/Administrador.java</code> &mdash; <strong>Nuevo.</strong> Clase de modelo para los administradores.</li>
+    <li><code>src/main/java/org/uade/progra3/utils/DataLoader.java</code> &mdash; Modificado. Se agreg&oacute; el parseo de grupos, administradores y la matriz de costos.</li>
+    <li><code>src/main/java/org/uade/progra3/servicio/RedSocialServicio.java</code> &mdash; Modificado. Se agreg&oacute; <code>calcularAsignacionOptima()</code>.</li>
+    <li><code>src/main/java/org/uade/progra3/ui/RedSocialFrame.java</code> &mdash; Modificado. Se agreg&oacute; la pesta&ntilde;a &ldquo;Asignaci&oacute;n admins (DP)&rdquo;.</li>
+    <li><code>src/main/resources/demo-red-social.json</code> &mdash; Modificado. Se agregaron datos de grupos, administradores y la matriz de costos.</li>
+    <li><code>src/test/java/org/uade/progra3/negocio/AsignacionAdminDPTest.java</code> &mdash; <strong>Nuevo.</strong> 8 tests unitarios con JUnit 5.</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<!--                          RESUMEN FINAL                             -->
+<!-- ================================================================== -->
+
+<hr class="separator">
+
+<h2>Resumen</h2>
+
+<table class="complexity-table">
+  <tr>
+    <th>Aspecto</th>
+    <th>Problema Opcional 1</th>
+    <th>Problema Opcional 3</th>
+  </tr>
+  <tr>
+    <td><strong>Problema</strong></td>
+    <td>Detectar desconexi&oacute;n tras un bloqueo y restaurar conectividad</td>
+    <td>Asignar administradores a grupos minimizando ineficiencia total</td>
+  </tr>
+  <tr>
+    <td><strong>Algoritmo</strong></td>
+    <td>BFS (Breadth-First Search)</td>
+    <td>Programaci&oacute;n Din&aacute;mica con bitmask</td>
+  </tr>
+  <tr>
+    <td><strong>Complejidad temporal</strong></td>
+    <td>O(V + E)</td>
+    <td>O(n &middot; 2<sup>n</sup>)</td>
+  </tr>
+  <tr>
+    <td><strong>Complejidad espacial</strong></td>
+    <td>O(V + E)</td>
+    <td>O(2<sup>n</sup>)</td>
+  </tr>
+  <tr>
+    <td><strong>Archivos nuevos</strong></td>
+    <td>2 (algoritmo + tests)</td>
+    <td>4 (algoritmo + 2 modelos + tests)</td>
+  </tr>
+  <tr>
+    <td><strong>Archivos modificados</strong></td>
+    <td colspan="2" style="text-align: center;">4 compartidos (DataLoader, RedSocialServicio, RedSocialFrame, demo-red-social.json)</td>
+  </tr>
+  <tr>
+    <td><strong>Tests</strong></td>
+    <td>8 tests unitarios</td>
+    <td>8 tests unitarios</td>
+  </tr>
+  <tr>
+    <td><strong>Total tests del proyecto</strong></td>
+    <td colspan="2" style="text-align: center;">43 tests &mdash; todos pasan exitosamente</td>
+  </tr>
+</table>
+
+</body>
+</html>
